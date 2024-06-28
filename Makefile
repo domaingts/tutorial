@@ -1,7 +1,7 @@
 NAME = sing-box
 COMMIT = $(shell git rev-parse --short HEAD)
-TAGS_GO120 = with_gvisor,with_dhcp,with_wireguard,with_reality_server,with_clash_api,with_quic,with_utls
-TAGS_GO121 = with_ech
+TAGS_GO120 = with_gvisor,with_dhcp,with_wireguard,with_reality_server,with_clash_api,with_quic
+TAGS_GO121 =
 TAGS ?= $(TAGS_GO118),$(TAGS_GO120),$(TAGS_GO121)
 TAGS_TEST ?= with_gvisor,with_quic,with_wireguard,with_grpc,with_ech,with_utls,with_reality_server
 
@@ -17,7 +17,7 @@ PREFIX ?= $(shell go env GOPATH)
 .PHONY: test release docs build
 
 build:
-	GOAMD64=V3 CGO_ENABLED=0 GOOS=$(GOHOSTOS) GOARCH=$(GOHOSTARCH) go build $(MAIN_PARAMS) $(MAIN)
+	GOAMD64=v3 CGO_ENABLED=0 GOOS=$(GOHOSTOS) GOARCH=$(GOHOSTARCH) go build $(MAIN_PARAMS) $(MAIN)
 
 pack:
 	tar czvf sing-box.tar.gz sing-box

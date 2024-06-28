@@ -18,7 +18,7 @@ func (c *CommandClient) CloseConnections() error {
 	return binary.Write(conn, binary.BigEndian, uint8(CommandCloseConnections))
 }
 
-func (s *CommandServer) handleCloseConnections(conn net.Conn) error {
+func (s *CommandServer) handleCloseConnections(_ net.Conn) error {
 	conntrack.Close()
 	go func() {
 		time.Sleep(time.Second)
