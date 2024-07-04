@@ -2,6 +2,12 @@
 icon: material/alert-decagram
 ---
 
+#### 1.10.0-alpha.19
+
+* Add `rule-set decompile` command
+* Add IP address support for `rule-set match` command
+* Fixes and improvements
+
 #### 1.10.0-alpha.18
 
 * Add new `inline` rule-set type **1**
