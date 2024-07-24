@@ -5,16 +5,15 @@ import (
 	"encoding/binary"
 	"io"
 	"os"
-	"sync"
+	// "sync"
 	"sync/atomic"
 
-	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/varbin"
 )
 
 type Reader struct {
-	access         sync.Mutex
+	// access         sync.Mutex
 	reader         io.ReadSeeker
 	bufferedReader *bufio.Reader
 	metadataIndex  int64
@@ -42,11 +41,11 @@ func Open(path string) (*Reader, []string, error) {
 	return reader, codes, nil
 }
 
-type geositeMetadata struct {
-	Code   string
-	Index  uint64
-	Length uint64
-}
+// type geositeMetadata struct {
+// 	Code   string
+// 	Index  uint64
+// 	Length uint64
+// }
 
 func (r *Reader) readMetadata() error {
 	counter := &readCounter{Reader: r.reader}
@@ -62,6 +61,7 @@ func (r *Reader) readMetadata() error {
 	if err != nil {
 		return err
 	}
+	keys := make([]string, entryLength)
 	domainIndex := make(map[string]int)
 	domainLength := make(map[string]int)
 	for i := 0; i < int(entryLength); i++ {
