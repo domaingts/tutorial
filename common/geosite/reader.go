@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 	"os"
-	// "sync"
+	"sync"
 	"sync/atomic"
 
 	E "github.com/sagernet/sing/common/exceptions"
@@ -13,7 +13,7 @@ import (
 )
 
 type Reader struct {
-	// access         sync.Mutex
+	access         sync.Mutex
 	reader         io.ReadSeeker
 	bufferedReader *bufio.Reader
 	metadataIndex  int64
@@ -41,11 +41,11 @@ func Open(path string) (*Reader, []string, error) {
 	return reader, codes, nil
 }
 
-// type geositeMetadata struct {
-// 	Code   string
-// 	Index  uint64
-// 	Length uint64
-// }
+type geositeMetadata struct {
+	Code   string
+	Index  uint64
+	Length uint64
+}
 
 func (r *Reader) readMetadata() error {
 	counter := &readCounter{Reader: r.reader}

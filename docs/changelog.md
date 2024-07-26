@@ -2,6 +2,16 @@
 icon: material/alert-decagram
 ---
 
+#### 1.10.0-alpha.25
+
+* Add AdGuard DNS Filter support **1**
+
+**1**:
+
+The new feature allows you to use AdGuard DNS Filter lists in a sing-box without AdGuard Home. 
+
+See [AdGuard DNS Filter](/configuration/rule-set/adguard/).
+
 #### 1.10.0-alpha.23
 
 * Add Chromium support for QUIC sniffer
