@@ -24,6 +24,7 @@ pack:
 ci_build_go120:
 	go build $(PARAMS) $(MAIN)
 	go build $(PARAMS) -tags "$(TAGS_GO120)" $(MAIN)
+	go build $(PARAMS) -tags "$(TAGS_GO120)" $(MAIN)
 
 ci_build:
 	go build $(PARAMS) $(MAIN)
