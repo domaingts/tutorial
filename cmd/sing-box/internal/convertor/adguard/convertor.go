@@ -59,7 +59,9 @@ parseLine:
 			}
 			continue
 		}
-		ruleLine = strings.TrimSuffix(ruleLine, "|")
+		if strings.HasSuffix(ruleLine, "|") {
+			ruleLine = ruleLine[:len(ruleLine)-1]
+		}
 		var (
 			isExclude   bool
 			isSuffix    bool
@@ -100,7 +102,9 @@ parseLine:
 			ruleLine = ruleLine[2:]
 			isExclude = true
 		}
-		ruleLine = strings.TrimSuffix(ruleLine, "|")
+		if strings.HasSuffix(ruleLine, "|") {
+			ruleLine = ruleLine[:len(ruleLine)-1]
+		}
 		if strings.HasPrefix(ruleLine, "||") {
 			ruleLine = ruleLine[2:]
 			isSuffix = true
