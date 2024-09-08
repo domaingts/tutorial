@@ -16,7 +16,7 @@ PREFIX ?= $(shell go env GOPATH)
 .PHONY: test release docs build
 
 build:
-	GOAMD64=v3 CGO_ENABLED=0 GOOS=$(GOHOSTOS) GOARCH=$(GOHOSTARCH) go build $(MAIN_PARAMS) $(MAIN)
+	go build $(MAIN_PARAMS) $(MAIN)
 
 pack:
 	tar czvf sing-box.tar.gz sing-box
