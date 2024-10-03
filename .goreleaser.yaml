@@ -1,0 +1,42 @@
+project_name: sing-box
+
+version: 2
+
+snapshot:
+  version_template: "{{ .Version }}"
+
+builds:
+  - id: main
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -v
+      - -trimpath
+    ldflags:
+      - -X github.com/sagernet/sing-box/constant.Version={{.Version}}
+      - -s
+      - -w
+      - -buildid=
+    tags:
+      - with_gvisor
+      - with_quic
+      - with_dhcp
+      - with_wireguard
+      - with_ech
+      - with_utls
+      - with_reality_server
+      - with_clash_api
+
+    goos:
+      - linux
+    goarch:
+      - amd64
+    goamd64: 
+      - v3
+      - v2
+    main: ./cmd/sing-box
+    binary: sing-box
+
+archives:
+  - name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Amd64 }}"
+    format: tar.gz
