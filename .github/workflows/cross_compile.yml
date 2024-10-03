@@ -8,24 +8,6 @@ on:
 jobs:
   build-corss:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: linux-amd64-v2
-            goos: linux
-            goarch: amd64
-            goamd64: v2
-          - name: linux-amd64-v3
-            goos: linux
-            goarch: amd64
-            goamd64: v3
-    env:
-      GOOS: ${{ matrix.goos }}
-      GOARCH: ${{ matrix.goarch }}
-      GOAMD64: ${{ matrix.goamd64 }}
-      GONAME: ${{ matrix.name }}
-      CGO_ENABLED: 0
-      TAGS: with_gvisor,with_dhcp,with_wireguard,with_reality_server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
