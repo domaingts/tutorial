@@ -19,14 +19,10 @@ builds:
       - -buildid=
     tags:
       - with_gvisor
-      - with_quic
       - with_dhcp
       - with_wireguard
-      - with_ech
       - with_utls
       - with_reality_server
-      - with_clash_api
-
     goos:
       - linux
     goarch:
