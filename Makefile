@@ -1,5 +1,6 @@
 NAME = sing-box
 COMMIT = $(shell git rev-parse --short HEAD)
+GONAME ?= linux-amd64
 TAGS_GO120 = with_gvisor,with_dhcp,with_wireguard,with_reality_server,with_clash_api,with_quic,with_utls
 TAGS ?= $(TAGS_GO120)
 TAGS_TEST ?= with_gvisor,with_quic,with_wireguard,with_grpc,with_ech,with_utls,with_reality_server
@@ -19,7 +20,7 @@ build:
 	go build $(MAIN_PARAMS) $(MAIN)
 
 pack:
-	tar czvf sing-box.tar.gz sing-box
+	tar czvf sing-box-$(GONAME).tar.gz sing-box
 
 ci_build_go120:
 	go build $(PARAMS) $(MAIN)

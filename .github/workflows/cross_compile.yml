@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-corss:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -23,6 +23,7 @@ jobs:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
       GOAMD64: ${{ matrix.goamd64 }}
+      GONAME: ${{ matrix.name }}
       CGO_ENABLED: 0
       TAGS: with_gvisor,with_dhcp,with_wireguard,with_reality_server
     steps:
@@ -42,4 +43,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sing-box-${{ matrix.name }}
-          path: sing-box.tar.gz
+          path: sing-box-${{ matrix.name }}.tar.gz
+      - name: release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sing-box-${{ matrix.name }}.tar.gz
