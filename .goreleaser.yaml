@@ -2,9 +2,6 @@ project_name: sing-box
 
 version: 2
 
-snapshot:
-  version_template: "{{ .Version }}"
-
 builds:
   - id: main
     env:
