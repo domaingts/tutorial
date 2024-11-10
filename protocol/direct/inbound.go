@@ -2,6 +2,7 @@ package direct
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
@@ -107,7 +108,7 @@ func (i *Inbound) NewPacketEx(buffer *buf.Buffer, source M.Socksaddr) {
 }
 
 func (i *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
-	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata, "NewConnectionEx")
+	i.logger.InfoContext(ctx, fmt.Sprintf("NewConnectionEx, %+v, inbound connection to ", metadata), metadata.Destination)
 	metadata.Inbound = i.Tag()
 	metadata.InboundType = i.Type()
 	i.router.RouteConnectionEx(ctx, conn, metadata, onClose)
