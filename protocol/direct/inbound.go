@@ -2,7 +2,6 @@ package direct
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 
@@ -88,7 +87,7 @@ func (i *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata ada
 	case 3:
 		metadata.Destination.Port = i.overrideDestination.Port
 	}
-	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata, "NewConnection")
+	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination)
 	return i.router.RouteConnection(ctx, conn, metadata)
 }
 
@@ -108,7 +107,17 @@ func (i *Inbound) NewPacketEx(buffer *buf.Buffer, source M.Socksaddr) {
 }
 
 func (i *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
-	i.logger.InfoContext(ctx, fmt.Sprintf("NewConnectionEx, %+v, inbound connection to ", metadata), metadata.Destination)
+	switch i.overrideOption {
+	case 1:
+		metadata.Destination = i.overrideDestination
+	case 2:
+		destination := i.overrideDestination
+		destination.Port = metadata.Destination.Port
+		metadata.Destination = destination
+	case 3:
+		metadata.Destination.Port = i.overrideDestination.Port
+	}
+	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination)
 	metadata.Inbound = i.Tag()
 	metadata.InboundType = i.Type()
 	i.router.RouteConnectionEx(ctx, conn, metadata, onClose)
@@ -116,7 +125,7 @@ func (i *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata a
 
 func (i *Inbound) NewPacketConnectionEx(ctx context.Context, conn N.PacketConn, source M.Socksaddr, destination M.Socksaddr, onClose N.CloseHandlerFunc) {
 	i.logger.InfoContext(ctx, "inbound packet connection from ", source)
-	i.logger.InfoContext(ctx, "inbound packet connection to ", destination, "NewPacketConnectionEx")
+	i.logger.InfoContext(ctx, "inbound packet connection to ", destination)
 	var metadata adapter.InboundContext
 	metadata.Inbound = i.Tag()
 	metadata.InboundType = i.Type()
