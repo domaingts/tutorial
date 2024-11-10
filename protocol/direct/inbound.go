@@ -2,7 +2,6 @@ package direct
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 
@@ -15,7 +14,7 @@ import (
 	"github.com/sagernet/sing/common/buf"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
-	"github.com/sagernet/sing/common/udpnat2"
+	udpnat "github.com/sagernet/sing/common/udpnat2"
 )
 
 func RegisterInbound(registry *inbound.Registry) {
@@ -66,7 +65,6 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 		ConnectionHandler: inbound,
 		PacketHandler:     inbound,
 	})
-	fmt.Println("create inbound overrideDestination", inbound.overrideDestination.String(), inbound.overrideOption)
 	return inbound, nil
 }
 
@@ -89,7 +87,7 @@ func (i *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata ada
 	case 3:
 		metadata.Destination.Port = i.overrideDestination.Port
 	}
-	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata)
+	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata, "NewConnection")
 	return i.router.RouteConnection(ctx, conn, metadata)
 }
 
@@ -109,7 +107,7 @@ func (i *Inbound) NewPacketEx(buffer *buf.Buffer, source M.Socksaddr) {
 }
 
 func (i *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
-	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination)
+	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata, "NewConnectionEx")
 	metadata.Inbound = i.Tag()
 	metadata.InboundType = i.Type()
 	i.router.RouteConnectionEx(ctx, conn, metadata, onClose)
@@ -117,7 +115,7 @@ func (i *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata a
 
 func (i *Inbound) NewPacketConnectionEx(ctx context.Context, conn N.PacketConn, source M.Socksaddr, destination M.Socksaddr, onClose N.CloseHandlerFunc) {
 	i.logger.InfoContext(ctx, "inbound packet connection from ", source)
-	i.logger.InfoContext(ctx, "inbound packet connection to ", destination)
+	i.logger.InfoContext(ctx, "inbound packet connection to ", destination, "NewPacketConnectionEx")
 	var metadata adapter.InboundContext
 	metadata.Inbound = i.Tag()
 	metadata.InboundType = i.Type()
