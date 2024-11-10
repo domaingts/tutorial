@@ -2,6 +2,7 @@ package direct
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
@@ -65,6 +66,7 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 		ConnectionHandler: inbound,
 		PacketHandler:     inbound,
 	})
+	fmt.Println("create inbound overrideDestination", inbound.overrideDestination.String(), inbound.overrideOption)
 	return inbound, nil
 }
 
@@ -87,7 +89,7 @@ func (i *Inbound) NewConnection(ctx context.Context, conn net.Conn, metadata ada
 	case 3:
 		metadata.Destination.Port = i.overrideDestination.Port
 	}
-	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination)
+	i.logger.InfoContext(ctx, "inbound connection to ", metadata.Destination, metadata)
 	return i.router.RouteConnection(ctx, conn, metadata)
 }
 
