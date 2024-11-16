@@ -7,8 +7,7 @@ import (
 	"time"
 
 	C "github.com/sagernet/sing-box/constant"
-	"github.com/sagernet/sing-box/experimental/deprecated"
-	dns "github.com/sagernet/sing-dns"
+	"github.com/sagernet/sing-dns"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/common/json/badjson"
@@ -137,29 +136,26 @@ func (r *DNSRuleAction) UnmarshalJSONContext(ctx context.Context, data []byte) e
 	return badjson.UnmarshallExcludedContext(ctx, data, (*_DNSRuleAction)(r), v)
 }
 
-type _RouteActionOptions struct {
+type RouteActionOptions struct {
 	Outbound string `json:"outbound,omitempty"`
+	RawRouteOptionsActionOptions
 }
 
-type RouteActionOptions _RouteActionOptions
+type RawRouteOptionsActionOptions struct {
+	OverrideAddress string `json:"override_address,omitempty"`
+	OverridePort    uint16 `json:"override_port,omitempty"`
 
-func (r *RouteActionOptions) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, (*_RouteActionOptions)(r))
-	if err != nil {
-		return err
-	}
-	return nil
-}
+	NetworkStrategy NetworkStrategy `json:"network_strategy,omitempty"`
+	FallbackDelay   uint32          `json:"fallback_delay,omitempty"`
 
-type _RouteOptionsActionOptions struct {
 	UDPDisableDomainUnmapping bool `json:"udp_disable_domain_unmapping,omitempty"`
 	UDPConnect                bool `json:"udp_connect,omitempty"`
 }
 
-type RouteOptionsActionOptions _RouteOptionsActionOptions
+type RouteOptionsActionOptions RawRouteOptionsActionOptions
 
 func (r *RouteOptionsActionOptions) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, (*_RouteOptionsActionOptions)(r))
+	err := json.Unmarshal(data, (*RawRouteOptionsActionOptions)(r))
 	if err != nil {
 		return err
 	}
@@ -169,27 +165,11 @@ func (r *RouteOptionsActionOptions) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type _DNSRouteActionOptions struct {
-	Server string `json:"server,omitempty"`
-	// Deprecated: Use DNSRouteOptionsActionOptions instead.
-	DisableCache bool `json:"disable_cache,omitempty"`
-	// Deprecated: Use DNSRouteOptionsActionOptions instead.
-	RewriteTTL *uint32 `json:"rewrite_ttl,omitempty"`
-	// Deprecated: Use DNSRouteOptionsActionOptions instead.
+type DNSRouteActionOptions struct {
+	Server       string                `json:"server,omitempty"`
+	DisableCache bool                  `json:"disable_cache,omitempty"`
+	RewriteTTL   *uint32               `json:"rewrite_ttl,omitempty"`
 	ClientSubnet *badoption.Prefixable `json:"client_subnet,omitempty"`
-}
-
-type DNSRouteActionOptions _DNSRouteActionOptions
-
-func (r *DNSRouteActionOptions) UnmarshalJSONContext(ctx context.Context, data []byte) error {
-	err := json.Unmarshal(data, (*_DNSRouteActionOptions)(r))
-	if err != nil {
-		return err
-	}
-	if r.DisableCache || r.RewriteTTL != nil || r.ClientSubnet != nil {
-		deprecated.Report(ctx, deprecated.OptionLegacyDNSRouteOptions)
-	}
-	return nil
 }
 
 type _DNSRouteOptionsActionOptions struct {

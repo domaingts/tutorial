@@ -3,6 +3,7 @@ package option
 import (
 	"strings"
 
+	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-dns"
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
@@ -149,4 +150,48 @@ func DNSQueryTypeToString(queryType uint16) string {
 		return typeName
 	}
 	return F.ToString(queryType)
+}
+
+type NetworkStrategy C.NetworkStrategy
+
+func (n NetworkStrategy) MarshalJSON() ([]byte, error) {
+	return json.Marshal(C.NetworkStrategy(n).String())
+}
+
+func (n *NetworkStrategy) UnmarshalJSON(content []byte) error {
+	var value string
+	err := json.Unmarshal(content, &value)
+	if err != nil {
+		return err
+	}
+	strategy, loaded := C.StringToNetworkStrategy[value]
+	if !loaded {
+		return E.New("unknown network strategy: ", value)
+	}
+	*n = NetworkStrategy(strategy)
+	return nil
+}
+
+type InterfaceType C.InterfaceType
+
+func (t InterfaceType) Build() C.InterfaceType {
+	return C.InterfaceType(t)
+}
+
+func (t InterfaceType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(C.InterfaceType(t).String())
+}
+
+func (t *InterfaceType) UnmarshalJSON(content []byte) error {
+	var value string
+	err := json.Unmarshal(content, &value)
+	if err != nil {
+		return err
+	}
+	interfaceType, loaded := C.StringToInterfaceType[value]
+	if !loaded {
+		return E.New("unknown interface type: ", value)
+	}
+	*t = InterfaceType(interfaceType)
+	return nil
 }

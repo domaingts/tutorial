@@ -3,10 +3,12 @@ package route
 import (
 	"context"
 	"errors"
-	"net/netip"
+	"net"
 	"os"
 	"runtime"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/common/conntrack"
@@ -15,33 +17,40 @@ import (
 	"github.com/sagernet/sing-box/experimental/libbox/platform"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-tun"
+	"github.com/sagernet/sing/common"
+	"github.com/sagernet/sing/common/atomic"
 	"github.com/sagernet/sing/common/control"
 	E "github.com/sagernet/sing/common/exceptions"
+	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
 	"github.com/sagernet/sing/common/winpowrprof"
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/pause"
+
+	"golang.org/x/exp/slices"
 )
 
 var _ adapter.NetworkManager = (*NetworkManager)(nil)
 
 type NetworkManager struct {
-	logger                 logger.ContextLogger
-	interfaceFinder        *control.DefaultInterfaceFinder
+	logger            logger.ContextLogger
+	interfaceFinder   *control.DefaultInterfaceFinder
+	networkInterfaces atomic.TypedValue[[]adapter.NetworkInterface]
+
 	autoDetectInterface    bool
-	defaultInterface       string
-	defaultMark            uint32
+	defaultOptions         adapter.NetworkOptions
 	autoRedirectOutputMark uint32
-	networkMonitor         tun.NetworkUpdateMonitor
-	interfaceMonitor       tun.DefaultInterfaceMonitor
-	packageManager         tun.PackageManager
-	powerListener          winpowrprof.EventListener
-	pauseManager           pause.Manager
-	platformInterface      platform.Interface
-	outboundManager        adapter.OutboundManager
-	wifiState              adapter.WIFIState
-	started                bool
+
+	networkMonitor    tun.NetworkUpdateMonitor
+	interfaceMonitor  tun.DefaultInterfaceMonitor
+	packageManager    tun.PackageManager
+	powerListener     winpowrprof.EventListener
+	pauseManager      pause.Manager
+	platformInterface platform.Interface
+	outboundManager   adapter.OutboundManager
+	wifiState         adapter.WIFIState
+	started           bool
 }
 
 func NewNetworkManager(ctx context.Context, logger logger.ContextLogger, routeOptions option.RouteOptions) (*NetworkManager, error) {
@@ -49,13 +58,27 @@ func NewNetworkManager(ctx context.Context, logger logger.ContextLogger, routeOp
 		logger:              logger,
 		interfaceFinder:     control.NewDefaultInterfaceFinder(),
 		autoDetectInterface: routeOptions.AutoDetectInterface,
-		defaultInterface:    routeOptions.DefaultInterface,
-		defaultMark:         routeOptions.DefaultMark,
-		pauseManager:        service.FromContext[pause.Manager](ctx),
-		platformInterface:   service.FromContext[platform.Interface](ctx),
-		outboundManager:     service.FromContext[adapter.OutboundManager](ctx),
+		defaultOptions: adapter.NetworkOptions{
+			BindInterface:       routeOptions.DefaultInterface,
+			RoutingMark:         routeOptions.DefaultMark,
+			NetworkStrategy:     C.NetworkStrategy(routeOptions.DefaultNetworkStrategy),
+			NetworkType:         common.Map(routeOptions.DefaultNetworkType, option.InterfaceType.Build),
+			FallbackNetworkType: common.Map(routeOptions.DefaultFallbackNetworkType, option.InterfaceType.Build),
+			FallbackDelay:       time.Duration(routeOptions.DefaultFallbackDelay),
+		},
+		pauseManager:      service.FromContext[pause.Manager](ctx),
+		platformInterface: service.FromContext[platform.Interface](ctx),
+		outboundManager:   service.FromContext[adapter.OutboundManager](ctx),
 	}
-	usePlatformDefaultInterfaceMonitor := nm.platformInterface != nil && nm.platformInterface.UsePlatformDefaultInterfaceMonitor()
+	if C.NetworkStrategy(routeOptions.DefaultNetworkStrategy) != C.NetworkStrategyDefault {
+		if routeOptions.DefaultInterface != "" {
+			return nil, E.New("`default_network_strategy` is conflict with `default_interface`")
+		}
+		if !routeOptions.AutoDetectInterface {
+			return nil, E.New("`auto_detect_interface` is required by `default_network_strategy`")
+		}
+	}
+	usePlatformDefaultInterfaceMonitor := nm.platformInterface != nil
 	enforceInterfaceMonitor := routeOptions.AutoDetectInterface
 	if !usePlatformDefaultInterfaceMonitor {
 		networkMonitor, err := tun.NewNetworkUpdateMonitor(logger)
@@ -75,12 +98,12 @@ func NewNetworkManager(ctx context.Context, logger logger.ContextLogger, routeOp
 			if err != nil {
 				return nil, E.New("auto_detect_interface unsupported on current platform")
 			}
-			interfaceMonitor.RegisterCallback(nm.notifyNetworkUpdate)
+			interfaceMonitor.RegisterCallback(nm.notifyInterfaceUpdate)
 			nm.interfaceMonitor = interfaceMonitor
 		}
 	} else {
 		interfaceMonitor := nm.platformInterface.CreateDefaultInterfaceMonitor(logger)
-		interfaceMonitor.RegisterCallback(nm.notifyNetworkUpdate)
+		interfaceMonitor.RegisterCallback(nm.notifyInterfaceUpdate)
 		nm.interfaceMonitor = interfaceMonitor
 	}
 	return nm, nil
@@ -90,17 +113,17 @@ func (r *NetworkManager) Start(stage adapter.StartStage) error {
 	monitor := taskmonitor.New(r.logger, C.StartTimeout)
 	switch stage {
 	case adapter.StartStateInitialize:
-		if r.interfaceMonitor != nil {
-			monitor.Start("initialize interface monitor")
-			err := r.interfaceMonitor.Start()
+		if r.networkMonitor != nil {
+			monitor.Start("initialize network monitor")
+			err := r.networkMonitor.Start()
 			monitor.Finish()
 			if err != nil {
 				return err
 			}
 		}
-		if r.networkMonitor != nil {
-			monitor.Start("initialize network monitor")
-			err := r.networkMonitor.Start()
+		if r.interfaceMonitor != nil {
+			monitor.Start("initialize interface monitor")
+			err := r.interfaceMonitor.Start()
 			monitor.Finish()
 			if err != nil {
 				return err
@@ -151,20 +174,6 @@ func (r *NetworkManager) Start(stage adapter.StartStage) error {
 func (r *NetworkManager) Close() error {
 	monitor := taskmonitor.New(r.logger, C.StopTimeout)
 	var err error
-	if r.interfaceMonitor != nil {
-		monitor.Start("close interface monitor")
-		err = E.Append(err, r.interfaceMonitor.Close(), func(err error) error {
-			return E.Cause(err, "close interface monitor")
-		})
-		monitor.Finish()
-	}
-	if r.networkMonitor != nil {
-		monitor.Start("close network monitor")
-		err = E.Append(err, r.networkMonitor.Close(), func(err error) error {
-			return E.Cause(err, "close network monitor")
-		})
-		monitor.Finish()
-	}
 	if r.packageManager != nil {
 		monitor.Start("close package manager")
 		err = E.Append(err, r.packageManager.Close(), func(err error) error {
@@ -179,6 +188,20 @@ func (r *NetworkManager) Close() error {
 		})
 		monitor.Finish()
 	}
+	if r.interfaceMonitor != nil {
+		monitor.Start("close interface monitor")
+		err = E.Append(err, r.interfaceMonitor.Close(), func(err error) error {
+			return E.Cause(err, "close interface monitor")
+		})
+		monitor.Finish()
+	}
+	if r.networkMonitor != nil {
+		monitor.Start("close network monitor")
+		err = E.Append(err, r.networkMonitor.Close(), func(err error) error {
+			return E.Cause(err, "close network monitor")
+		})
+		monitor.Finish()
+	}
 	return nil
 }
 
@@ -187,20 +210,73 @@ func (r *NetworkManager) InterfaceFinder() control.InterfaceFinder {
 }
 
 func (r *NetworkManager) UpdateInterfaces() error {
-	if r.platformInterface == nil || !r.platformInterface.UsePlatformInterfaceGetter() {
+	if r.platformInterface == nil {
 		return r.interfaceFinder.Update()
 	} else {
 		interfaces, err := r.platformInterface.Interfaces()
 		if err != nil {
 			return err
 		}
-		r.interfaceFinder.UpdateInterfaces(interfaces)
+		if C.IsDarwin {
+			err = r.interfaceFinder.Update()
+			if err != nil {
+				return err
+			}
+			// NEInterface only provides name,index and type
+			interfaces = common.Map(interfaces, func(it adapter.NetworkInterface) adapter.NetworkInterface {
+				iif, _ := r.interfaceFinder.ByIndex(it.Index)
+				if iif != nil {
+					it.Interface = *iif
+				}
+				return it
+			})
+		} else {
+			r.interfaceFinder.UpdateInterfaces(common.Map(interfaces, func(it adapter.NetworkInterface) control.Interface { return it.Interface }))
+		}
+		oldInterfaces := r.networkInterfaces.Load()
+		newInterfaces := common.Filter(interfaces, func(it adapter.NetworkInterface) bool {
+			return it.Flags&net.FlagUp != 0
+		})
+		r.networkInterfaces.Store(newInterfaces)
+		if !slices.EqualFunc(oldInterfaces, newInterfaces, func(oldInterface adapter.NetworkInterface, newInterface adapter.NetworkInterface) bool {
+			return oldInterface.Interface.Index == newInterface.Interface.Index &&
+				oldInterface.Interface.Name == newInterface.Interface.Name &&
+				oldInterface.Interface.Flags == newInterface.Interface.Flags &&
+				oldInterface.Type == newInterface.Type &&
+				oldInterface.Expensive == newInterface.Expensive &&
+				oldInterface.Constrained == newInterface.Constrained
+		}) {
+			r.logger.Info("updated available networks: ", strings.Join(common.Map(newInterfaces, func(it adapter.NetworkInterface) string {
+				var options []string
+				options = append(options, F.ToString(it.Type))
+				if it.Expensive {
+					options = append(options, "expensive")
+				}
+				if it.Constrained {
+					options = append(options, "constrained")
+				}
+				return F.ToString(it.Name, " (", strings.Join(options, ", "), ")")
+			}), ", "))
+		}
 		return nil
 	}
 }
 
-func (r *NetworkManager) DefaultInterface() string {
-	return r.defaultInterface
+func (r *NetworkManager) DefaultNetworkInterface() *adapter.NetworkInterface {
+	iif := r.interfaceMonitor.DefaultInterface()
+	if iif == nil {
+		return nil
+	}
+	for _, it := range r.networkInterfaces.Load() {
+		if it.Interface.Index == iif.Index {
+			return &it
+		}
+	}
+	return &adapter.NetworkInterface{Interface: *iif}
+}
+
+func (r *NetworkManager) NetworkInterfaces() []adapter.NetworkInterface {
+	return r.networkInterfaces.Load()
 }
 
 func (r *NetworkManager) AutoDetectInterface() bool {
@@ -220,24 +296,34 @@ func (r *NetworkManager) AutoDetectInterfaceFunc() control.Func {
 		}
 		return control.BindToInterfaceFunc(r.interfaceFinder, func(network string, address string) (interfaceName string, interfaceIndex int, err error) {
 			remoteAddr := M.ParseSocksaddr(address).Addr
-			if C.IsLinux {
-				interfaceName, interfaceIndex = r.interfaceMonitor.DefaultInterface(remoteAddr)
-				if interfaceIndex == -1 {
-					err = tun.ErrNoRoute
-				}
-			} else {
-				interfaceIndex = r.interfaceMonitor.DefaultInterfaceIndex(remoteAddr)
-				if interfaceIndex == -1 {
-					err = tun.ErrNoRoute
+			if remoteAddr.IsValid() {
+				iif, err := r.interfaceFinder.ByAddr(remoteAddr)
+				if err == nil {
+					return iif.Name, iif.Index, nil
 				}
 			}
-			return
+			defaultInterface := r.interfaceMonitor.DefaultInterface()
+			if defaultInterface == nil {
+				return "", -1, tun.ErrNoRoute
+			}
+			return defaultInterface.Name, defaultInterface.Index, nil
 		})
 	}
 }
 
-func (r *NetworkManager) DefaultMark() uint32 {
-	return r.defaultMark
+func (r *NetworkManager) ProtectFunc() control.Func {
+	if r.platformInterface != nil && r.platformInterface.UsePlatformAutoDetectInterfaceControl() {
+		return func(network, address string, conn syscall.RawConn) error {
+			return control.Raw(conn, func(fd uintptr) error {
+				return r.platformInterface.AutoDetectInterfaceControl(int(fd))
+			})
+		}
+	}
+	return nil
+}
+
+func (r *NetworkManager) DefaultOptions() adapter.NetworkOptions {
+	return r.defaultOptions
 }
 
 func (r *NetworkManager) RegisterAutoRedirectOutputMark(mark uint32) error {
@@ -279,32 +365,47 @@ func (r *NetworkManager) ResetNetwork() {
 	}
 }
 
-func (r *NetworkManager) notifyNetworkUpdate(event int) {
-	if event == tun.EventNoRoute {
+func (r *NetworkManager) notifyInterfaceUpdate(defaultInterface *control.Interface, flags int) {
+	if defaultInterface == nil {
 		r.pauseManager.NetworkPause()
 		r.logger.Error("missing default interface")
-	} else {
-		r.pauseManager.NetworkWake()
-		if C.IsAndroid && r.platformInterface == nil {
-			var vpnStatus string
-			if r.interfaceMonitor.AndroidVPNEnabled() {
-				vpnStatus = "enabled"
-			} else {
-				vpnStatus = "disabled"
-			}
-			r.logger.Info("updated default interface ", r.interfaceMonitor.DefaultInterfaceName(netip.IPv4Unspecified()), ", index ", r.interfaceMonitor.DefaultInterfaceIndex(netip.IPv4Unspecified()), ", vpn ", vpnStatus)
+		return
+	}
+
+	r.pauseManager.NetworkWake()
+	var options []string
+	options = append(options, F.ToString("index ", defaultInterface.Index))
+	if C.IsAndroid && r.platformInterface == nil {
+		var vpnStatus string
+		if r.interfaceMonitor.AndroidVPNEnabled() {
+			vpnStatus = "enabled"
 		} else {
-			r.logger.Info("updated default interface ", r.interfaceMonitor.DefaultInterfaceName(netip.IPv4Unspecified()), ", index ", r.interfaceMonitor.DefaultInterfaceIndex(netip.IPv4Unspecified()))
+			vpnStatus = "disabled"
 		}
-		if r.platformInterface != nil {
-			state := r.platformInterface.ReadWIFIState()
-			if state != r.wifiState {
-				r.wifiState = state
-				if state.SSID == "" && state.BSSID == "" {
-					r.logger.Info("updated WIFI state: disconnected")
-				} else {
-					r.logger.Info("updated WIFI state: SSID=", state.SSID, ", BSSID=", state.BSSID)
-				}
+		options = append(options, "vpn "+vpnStatus)
+	} else if r.platformInterface != nil {
+		networkInterface := common.Find(r.networkInterfaces.Load(), func(it adapter.NetworkInterface) bool {
+			return it.Interface.Index == defaultInterface.Index
+		})
+		if networkInterface.Name == "" {
+			// race
+			return
+		}
+		options = append(options, F.ToString("type ", networkInterface.Type))
+		if networkInterface.Expensive {
+			options = append(options, "expensive")
+		}
+		if networkInterface.Constrained {
+			options = append(options, "constrained")
+		}
+	}
+	r.logger.Info("updated default interface ", defaultInterface.Name, ", ", strings.Join(options, ", "))
+	if r.platformInterface != nil {
+		state := r.platformInterface.ReadWIFIState()
+		if state != r.wifiState {
+			r.wifiState = state
+			if state.SSID != "" {
+				r.logger.Info("updated WIFI state: SSID=", state.SSID, ", BSSID=", state.BSSID)
 			}
 		}
 	}
@@ -312,7 +413,6 @@ func (r *NetworkManager) notifyNetworkUpdate(event int) {
 	if !r.started {
 		return
 	}
-
 	r.ResetNetwork()
 }
 

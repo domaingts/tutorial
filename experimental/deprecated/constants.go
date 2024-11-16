@@ -100,13 +100,13 @@ var OptionInboundOptions = Note{
 	MigrationLink:     "https://sing-box.sagernet.org/migration/#migrate-legacy-special-outbounds-to-rule-actions",
 }
 
-var OptionLegacyDNSRouteOptions = Note{
-	Name:              "legacy-dns-route-options",
-	Description:       "legacy dns route options",
+var OptionDestinationOverrideFields = Note{
+	Name:              "destination-override-fields",
+	Description:       "destination override fields in direct outbound",
 	DeprecatedVersion: "1.11.0",
-	ScheduledVersion:  "1.12.0",
-	EnvName:           "LEGACY_DNS_ROUTE_OPTIONS",
-	MigrationLink:     "https://sing-box.sagernet.org/migration/#migrate-legacy-dns-route-options-to-rule-actions",
+	ScheduledVersion:  "1.13.0",
+	EnvName:           "DESTINATION_OVERRIDE_FIELDS",
+	MigrationLink:     "https://sing-box.sagernet.org/migration/#migrate-destination-override-fields-to-route-options",
 }
 
 var Options = []Note{
@@ -116,5 +116,5 @@ var Options = []Note{
 	OptionTUNAddressX,
 	OptionSpecialOutbounds,
 	OptionInboundOptions,
-	OptionLegacyDNSRouteOptions,
+	OptionDestinationOverrideFields,
 }

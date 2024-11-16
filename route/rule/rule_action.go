@@ -19,6 +19,7 @@ import (
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/logger"
+	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
 )
 
@@ -29,9 +30,21 @@ func NewRuleAction(ctx context.Context, logger logger.ContextLogger, action opti
 	case C.RuleActionTypeRoute:
 		return &RuleActionRoute{
 			Outbound: action.RouteOptions.Outbound,
+			RuleActionRouteOptions: RuleActionRouteOptions{
+				OverrideAddress:           M.ParseSocksaddrHostPort(action.RouteOptions.OverrideAddress, 0),
+				OverridePort:              action.RouteOptions.OverridePort,
+				NetworkStrategy:           C.NetworkStrategy(action.RouteOptions.NetworkStrategy),
+				FallbackDelay:             time.Duration(action.RouteOptions.FallbackDelay),
+				UDPDisableDomainUnmapping: action.RouteOptions.UDPDisableDomainUnmapping,
+				UDPConnect:                action.RouteOptions.UDPConnect,
+			},
 		}, nil
 	case C.RuleActionTypeRouteOptions:
 		return &RuleActionRouteOptions{
+			OverrideAddress:           M.ParseSocksaddrHostPort(action.RouteOptionsOptions.OverrideAddress, 0),
+			OverridePort:              action.RouteOptionsOptions.OverridePort,
+			NetworkStrategy:           C.NetworkStrategy(action.RouteOptionsOptions.NetworkStrategy),
+			FallbackDelay:             time.Duration(action.RouteOptionsOptions.FallbackDelay),
 			UDPDisableDomainUnmapping: action.RouteOptionsOptions.UDPDisableDomainUnmapping,
 			UDPConnect:                action.RouteOptionsOptions.UDPConnect,
 		}, nil
@@ -85,10 +98,12 @@ func NewDNSRuleAction(logger logger.ContextLogger, action option.DNSRuleAction) 
 		return nil
 	case C.RuleActionTypeRoute:
 		return &RuleActionDNSRoute{
-			Server:       action.RouteOptions.Server,
-			DisableCache: action.RouteOptions.DisableCache,
-			RewriteTTL:   action.RouteOptions.RewriteTTL,
-			ClientSubnet: netip.Prefix(common.PtrValueOrDefault(action.RouteOptions.ClientSubnet)),
+			Server: action.RouteOptions.Server,
+			RuleActionDNSRouteOptions: RuleActionDNSRouteOptions{
+				DisableCache: action.RouteOptions.DisableCache,
+				RewriteTTL:   action.RouteOptions.RewriteTTL,
+				ClientSubnet: netip.Prefix(common.PtrValueOrDefault(action.RouteOptions.ClientSubnet)),
+			},
 		}
 	case C.RuleActionTypeRouteOptions:
 		return &RuleActionDNSRouteOptions{
@@ -109,6 +124,7 @@ func NewDNSRuleAction(logger logger.ContextLogger, action option.DNSRuleAction) 
 
 type RuleActionRoute struct {
 	Outbound string
+	RuleActionRouteOptions
 }
 
 func (r *RuleActionRoute) Type() string {
@@ -116,10 +132,24 @@ func (r *RuleActionRoute) Type() string {
 }
 
 func (r *RuleActionRoute) String() string {
-	return F.ToString("route(", r.Outbound, ")")
+	var descriptions []string
+	descriptions = append(descriptions, r.Outbound)
+	if r.UDPDisableDomainUnmapping {
+		descriptions = append(descriptions, "udp-disable-domain-unmapping")
+	}
+	if r.UDPConnect {
+		descriptions = append(descriptions, "udp-connect")
+	}
+	return F.ToString("route(", strings.Join(descriptions, ","), ")")
 }
 
 type RuleActionRouteOptions struct {
+	OverrideAddress           M.Socksaddr
+	OverridePort              uint16
+	NetworkStrategy           C.NetworkStrategy
+	NetworkType               []C.InterfaceType
+	FallbackNetworkType       []C.InterfaceType
+	FallbackDelay             time.Duration
 	UDPDisableDomainUnmapping bool
 	UDPConnect                bool
 }
@@ -140,10 +170,8 @@ func (r *RuleActionRouteOptions) String() string {
 }
 
 type RuleActionDNSRoute struct {
-	Server       string
-	DisableCache bool
-	RewriteTTL   *uint32
-	ClientSubnet netip.Prefix
+	Server string
+	RuleActionDNSRouteOptions
 }
 
 func (r *RuleActionDNSRoute) Type() string {
@@ -151,7 +179,18 @@ func (r *RuleActionDNSRoute) Type() string {
 }
 
 func (r *RuleActionDNSRoute) String() string {
-	return F.ToString("route(", r.Server, ")")
+	var descriptions []string
+	descriptions = append(descriptions, r.Server)
+	if r.DisableCache {
+		descriptions = append(descriptions, "disable-cache")
+	}
+	if r.RewriteTTL != nil {
+		descriptions = append(descriptions, F.ToString("rewrite-ttl=", *r.RewriteTTL))
+	}
+	if r.ClientSubnet.IsValid() {
+		descriptions = append(descriptions, F.ToString("client-subnet=", r.ClientSubnet))
+	}
+	return F.ToString("route(", strings.Join(descriptions, ","), ")")
 }
 
 type RuleActionDNSRouteOptions struct {
@@ -170,10 +209,10 @@ func (r *RuleActionDNSRouteOptions) String() string {
 		descriptions = append(descriptions, "disable-cache")
 	}
 	if r.RewriteTTL != nil {
-		descriptions = append(descriptions, F.ToString("rewrite-ttl(", *r.RewriteTTL, ")"))
+		descriptions = append(descriptions, F.ToString("rewrite-ttl=", *r.RewriteTTL))
 	}
 	if r.ClientSubnet.IsValid() {
-		descriptions = append(descriptions, F.ToString("client-subnet(", r.ClientSubnet, ")"))
+		descriptions = append(descriptions, F.ToString("client-subnet=", r.ClientSubnet))
 	}
 	return F.ToString("route-options(", strings.Join(descriptions, ","), ")")
 }
