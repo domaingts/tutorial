@@ -1,6 +1,8 @@
 module github.com/sagernet/sing-box
 
-go 1.20
+go 1.23.3
+
+replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.2
 
 require (
 	github.com/caddyserver/certmagic v0.20.0
@@ -52,8 +54,6 @@ require (
 	google.golang.org/protobuf v1.33.0
 	howett.net/plist v1.0.1
 )
-
-//replace github.com/sagernet/sing => ../sing
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
