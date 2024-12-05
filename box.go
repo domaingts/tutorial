@@ -167,6 +167,24 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "initialize inbound[", i, "]")
 		}
 	}
+	var services []adapter.LifecycleService
+	ntpOptions := common.PtrValueOrDefault(options.NTP)
+	if ntpOptions.Enabled {
+		ntpDialer, err := dialer.New(ctx, ntpOptions.DialerOptions)
+		if err != nil {
+			return nil, E.Cause(err, "create NTP service")
+		}
+		timeService := ntp.NewService(ntp.Options{
+			Context:       ctx,
+			Dialer:        ntpDialer,
+			Logger:        logFactory.NewLogger("ntp"),
+			Server:        ntpOptions.ServerOptions.Build(),
+			Interval:      time.Duration(ntpOptions.Interval),
+			WriteToSystem: ntpOptions.WriteToSystem,
+		})
+		service.MustRegister[ntp.TimeService](ctx, timeService)
+		services = append(services, adapter.NewLifecycleService(timeService, "ntp service"))
+	}
 	for i, inboundOptions := range options.Inbounds {
 		var tag string
 		if inboundOptions.Tag != "" {
@@ -226,7 +244,6 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "initialize platform interface")
 		}
 	}
-	var services []adapter.LifecycleService
 	if needCacheFile {
 		cacheFile := cachefile.New(ctx, common.PtrValueOrDefault(experimentalOptions.CacheFile))
 		service.MustRegister[adapter.CacheFile](ctx, cacheFile)
@@ -253,23 +270,6 @@ func New(options Options) (*Box, error) {
 			services = append(services, v2rayServer)
 			service.MustRegister[adapter.V2RayServer](ctx, v2rayServer)
 		}
-	}
-	ntpOptions := common.PtrValueOrDefault(options.NTP)
-	if ntpOptions.Enabled {
-		ntpDialer, err := dialer.New(ctx, ntpOptions.DialerOptions)
-		if err != nil {
-			return nil, E.Cause(err, "create NTP service")
-		}
-		timeService := ntp.NewService(ntp.Options{
-			Context:       ctx,
-			Dialer:        ntpDialer,
-			Logger:        logFactory.NewLogger("ntp"),
-			Server:        ntpOptions.ServerOptions.Build(),
-			Interval:      time.Duration(ntpOptions.Interval),
-			WriteToSystem: ntpOptions.WriteToSystem,
-		})
-		service.MustRegister[ntp.TimeService](ctx, timeService)
-		services = append(services, adapter.NewLifecycleService(timeService, "ntp service"))
 	}
 	return &Box{
 		network:    networkManager,
