@@ -2,7 +2,7 @@ module github.com/sagernet/sing-box
 
 go 1.23.4
 
-replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.2
+replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.4
 
 require (
 	github.com/caddyserver/certmagic v0.20.0
@@ -88,6 +88,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/u-root/uio v0.0.0-20230220225925-ffce2a382923 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
+	github.com/xtls/reality v0.0.0-20240909153216-e26ae2305463 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
