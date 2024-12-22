@@ -415,8 +415,18 @@ match:
 					Fqdn: metadata.Destination.Fqdn,
 				}
 			}
-			metadata.NetworkStrategy = routeOptions.NetworkStrategy
-			metadata.FallbackDelay = routeOptions.FallbackDelay
+			if routeOptions.NetworkStrategy != nil {
+				metadata.NetworkStrategy = routeOptions.NetworkStrategy
+			}
+			if len(routeOptions.NetworkType) > 0 {
+				metadata.NetworkType = routeOptions.NetworkType
+			}
+			if len(routeOptions.FallbackNetworkType) > 0 {
+				metadata.FallbackNetworkType = routeOptions.FallbackNetworkType
+			}
+			if routeOptions.FallbackDelay != 0 {
+				metadata.FallbackDelay = routeOptions.FallbackDelay
+			}
 			if routeOptions.UDPDisableDomainUnmapping {
 				metadata.UDPDisableDomainUnmapping = true
 			}
@@ -461,8 +471,12 @@ match:
 			break match
 		}
 	}
-	if !preMatch && metadata.Destination.Addr.IsUnspecified() {
-		newBuffer, newPacketBuffers, newErr := r.actionSniff(ctx, metadata, &rule.RuleActionSniff{}, inputConn, inputPacketConn)
+	if !preMatch && inputPacketConn != nil && !metadata.Destination.IsFqdn() && !metadata.Destination.Addr.IsGlobalUnicast() {
+		var timeout time.Duration
+		if metadata.InboundType == C.TypeSOCKS {
+			timeout = C.TCPTimeout
+		}
+		newBuffer, newPacketBuffers, newErr := r.actionSniff(ctx, metadata, &rule.RuleActionSniff{Timeout: timeout}, inputConn, inputPacketConn)
 		if newErr != nil {
 			fatalErr = newErr
 			return
@@ -558,8 +572,7 @@ func (r *Router) actionSniff(
 					return
 				}
 			} else {
-				// TODO: maybe always override destination
-				if metadata.Destination.Addr.IsUnspecified() {
+				if !metadata.Destination.Addr.IsGlobalUnicast() {
 					metadata.Destination = destination
 				}
 				if len(packetBuffers) > 0 {
