@@ -14,7 +14,6 @@ import (
 	"github.com/sagernet/sing-box/adapter/outbound"
 	"github.com/sagernet/sing-box/common/dialer"
 	"github.com/sagernet/sing-box/common/taskmonitor"
-	"github.com/sagernet/sing-box/common/tls"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/experimental"
 	"github.com/sagernet/sing-box/experimental/cachefile"
@@ -151,11 +150,29 @@ func New(options Options) (*Box, error) {
 		return nil, E.Cause(err, "initialize router")
 	}
 
+	// var timeService *tls.TimeServiceWrapper
+	// if ntpOptions.Enabled {
+	// 	timeService = new(tls.TimeServiceWrapper)
+	// 	service.MustRegister[ntp.TimeService](ctx, timeService)
+	// }
+
+	var services []adapter.LifecycleService
 	ntpOptions := common.PtrValueOrDefault(options.NTP)
-	var timeService *tls.TimeServiceWrapper
 	if ntpOptions.Enabled {
-		timeService = new(tls.TimeServiceWrapper)
+		ntpDialer, err := dialer.New(ctx, ntpOptions.DialerOptions)
+		if err != nil {
+			return nil, E.Cause(err, "create NTP service")
+		}
+		timeService := ntp.NewService(ntp.Options{
+			Context:       ctx,
+			Dialer:        ntpDialer,
+			Logger:        logFactory.NewLogger("ntp"),
+			Server:        ntpOptions.ServerOptions.Build(),
+			Interval:      time.Duration(ntpOptions.Interval),
+			WriteToSystem: ntpOptions.WriteToSystem,
+		})
 		service.MustRegister[ntp.TimeService](ctx, timeService)
+		services = append(services, adapter.NewLifecycleService(timeService, "ntp service"))
 	}
 
 	for i, endpointOptions := range options.Endpoints {
@@ -235,7 +252,6 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "initialize platform interface")
 		}
 	}
-	var services []adapter.LifecycleService
 	if needCacheFile {
 		cacheFile := cachefile.New(ctx, common.PtrValueOrDefault(experimentalOptions.CacheFile))
 		service.MustRegister[adapter.CacheFile](ctx, cacheFile)
@@ -263,22 +279,7 @@ func New(options Options) (*Box, error) {
 			service.MustRegister[adapter.V2RayServer](ctx, v2rayServer)
 		}
 	}
-	if ntpOptions.Enabled {
-		ntpDialer, err := dialer.New(ctx, ntpOptions.DialerOptions)
-		if err != nil {
-			return nil, E.Cause(err, "create NTP service")
-		}
-		ntpService := ntp.NewService(ntp.Options{
-			Context:       ctx,
-			Dialer:        ntpDialer,
-			Logger:        logFactory.NewLogger("ntp"),
-			Server:        ntpOptions.ServerOptions.Build(),
-			Interval:      time.Duration(ntpOptions.Interval),
-			WriteToSystem: ntpOptions.WriteToSystem,
-		})
-		timeService.TimeService = ntpService
-		services = append(services, adapter.NewLifecycleService(ntpService, "ntp service"))
-	}
+
 	return &Box{
 		network:    networkManager,
 		endpoint:   endpointManager,
