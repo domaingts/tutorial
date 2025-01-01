@@ -1,8 +1,6 @@
 module github.com/sagernet/sing-box
 
-go 1.23.4
-
-replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.5
+go 1.20
 
 require (
 	github.com/caddyserver/certmagic v0.20.0
@@ -28,14 +26,14 @@ require (
 	github.com/sagernet/gvisor v0.0.0-20241123041152-536d05261cff
 	github.com/sagernet/quic-go v0.48.2-beta.1
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691
-	github.com/sagernet/sing v0.6.0-beta.8
+	github.com/sagernet/sing v0.6.0-beta.9
 	github.com/sagernet/sing-dns v0.4.0-beta.1
 	github.com/sagernet/sing-mux v0.3.0-alpha.1
-	github.com/sagernet/sing-quic v0.4.0-alpha.4
+	github.com/sagernet/sing-quic v0.4.0-beta.2
 	github.com/sagernet/sing-shadowsocks v0.2.7
 	github.com/sagernet/sing-shadowsocks2 v0.2.0
 	github.com/sagernet/sing-shadowtls v0.2.0-alpha.2
-	github.com/sagernet/sing-tun v0.6.0-beta.6
+	github.com/sagernet/sing-tun v0.6.0-beta.7.0.20241229131914-aa9d9c62966f
 	github.com/sagernet/sing-vmess v0.2.0-beta.1
 	github.com/sagernet/smux v0.0.0-20231208180855-7041f6ea79e7
 	github.com/sagernet/utls v1.6.7
@@ -45,11 +43,11 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
-	golang.org/x/crypto v0.29.0
+	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/mod v0.20.0
 	golang.org/x/net v0.31.0
-	golang.org/x/sys v0.27.0
+	golang.org/x/sys v0.28.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
@@ -92,11 +90,10 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/u-root/uio v0.0.0-20230220225925-ffce2a382923 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
-	github.com/xtls/reality v0.0.0-20240909153216-e26ae2305463 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/text v0.20.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
