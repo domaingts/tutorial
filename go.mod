@@ -1,6 +1,6 @@
 module github.com/sagernet/sing-box
 
-go 1.23.5
+go 1.23.6
 
 replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.5
 
