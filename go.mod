@@ -1,6 +1,6 @@
 module github.com/sagernet/sing-box
 
-go 1.24.1
+go 1.24.2
 
 replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.5
 
@@ -28,7 +28,7 @@ require (
 	github.com/sagernet/gvisor v0.0.0-20241123041152-536d05261cff
 	github.com/sagernet/quic-go v0.49.0-beta.1
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691
-	github.com/sagernet/sing v0.6.3
+	github.com/sagernet/sing v0.6.5
 	github.com/sagernet/sing-dns v0.4.0
 	github.com/sagernet/sing-mux v0.3.1
 	github.com/sagernet/sing-quic v0.4.0
@@ -55,8 +55,6 @@ require (
 	google.golang.org/protobuf v1.33.0
 	howett.net/plist v1.0.1
 )
-
-//replace github.com/sagernet/sing => ../sing
 
 require (
 	github.com/ajg/form v1.5.1 // indirect

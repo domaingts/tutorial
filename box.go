@@ -61,17 +61,17 @@ func Context(
 	if service.FromContext[option.InboundOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.InboundRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.InboundOptionsRegistry](ctx, inboundRegistry)
-		ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
+		ctx = service.ContextWith(ctx, inboundRegistry)
 	}
 	if service.FromContext[option.OutboundOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.OutboundRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.OutboundOptionsRegistry](ctx, outboundRegistry)
-		ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
+		ctx = service.ContextWith(ctx, outboundRegistry)
 	}
 	if service.FromContext[option.EndpointOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.EndpointRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.EndpointOptionsRegistry](ctx, endpointRegistry)
-		ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
+		ctx = service.ContextWith(ctx, endpointRegistry)
 	}
 	return ctx
 }
@@ -275,7 +275,7 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "create clash-server")
 		}
 		router.SetTracker(clashServer)
-		service.MustRegister[adapter.ClashServer](ctx, clashServer)
+		service.MustRegister(ctx, clashServer)
 		services = append(services, clashServer)
 	}
 	if needV2RayAPI {
@@ -286,7 +286,7 @@ func New(options Options) (*Box, error) {
 		if v2rayServer.StatsService() != nil {
 			router.SetTracker(v2rayServer.StatsService())
 			services = append(services, v2rayServer)
-			service.MustRegister[adapter.V2RayServer](ctx, v2rayServer)
+			service.MustRegister(ctx, v2rayServer)
 		}
 	}
 	return &Box{
