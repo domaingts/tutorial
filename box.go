@@ -164,7 +164,7 @@ func New(options Options) (*Box, error) {
 		if err != nil {
 			return nil, E.Cause(err, "create NTP service")
 		}
-		timeService := ntp.NewService(ntp.Options{
+		ntpService := ntp.NewService(ntp.Options{
 			Context:       ctx,
 			Dialer:        ntpDialer,
 			Logger:        logFactory.NewLogger("ntp"),
@@ -172,8 +172,8 @@ func New(options Options) (*Box, error) {
 			Interval:      time.Duration(ntpOptions.Interval),
 			WriteToSystem: ntpOptions.WriteToSystem,
 		})
-		service.MustRegister[ntp.TimeService](ctx, timeService)
-		services = append(services, adapter.NewLifecycleService(timeService, "ntp service"))
+		service.MustRegister(ctx, ntpService)
+		services = append(services, adapter.NewLifecycleService(ntpService, "ntp service"))
 	}
 
 	for i, endpointOptions := range options.Endpoints {
@@ -274,7 +274,7 @@ func New(options Options) (*Box, error) {
 		if err != nil {
 			return nil, E.Cause(err, "create clash-server")
 		}
-		router.SetTracker(clashServer)
+		router.AppendTracker(clashServer)
 		service.MustRegister(ctx, clashServer)
 		services = append(services, clashServer)
 	}
@@ -284,7 +284,7 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "create v2ray-server")
 		}
 		if v2rayServer.StatsService() != nil {
-			router.SetTracker(v2rayServer.StatsService())
+			router.AppendTracker(v2rayServer.StatsService())
 			services = append(services, v2rayServer)
 			service.MustRegister(ctx, v2rayServer)
 		}
