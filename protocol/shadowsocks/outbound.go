@@ -23,7 +23,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.ShadowsocksOutboundOptions](registry, C.TypeShadowsocks, NewOutbound)
+	outbound.Register(registry, C.TypeShadowsocks, NewOutbound)
 }
 
 type Outbound struct {

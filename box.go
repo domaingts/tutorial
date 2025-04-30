@@ -172,7 +172,7 @@ func New(options Options) (*Box, error) {
 			Interval:      time.Duration(ntpOptions.Interval),
 			WriteToSystem: ntpOptions.WriteToSystem,
 		})
-		service.MustRegister(ctx, ntpService)
+		service.MustRegister[ntp.TimeService](ctx, ntpService)
 		services = append(services, adapter.NewLifecycleService(ntpService, "ntp service"))
 	}
 
