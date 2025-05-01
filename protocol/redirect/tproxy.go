@@ -24,7 +24,7 @@ import (
 )
 
 func RegisterTProxy(registry *inbound.Registry) {
-	inbound.Register[option.TProxyInboundOptions](registry, C.TypeTProxy, NewTProxy)
+	inbound.Register(registry, C.TypeTProxy, NewTProxy)
 }
 
 type TProxy struct {

@@ -16,7 +16,7 @@ import (
 )
 
 func RegisterRedirect(registry *inbound.Registry) {
-	inbound.Register[option.RedirectInboundOptions](registry, C.TypeRedirect, NewRedirect)
+	inbound.Register(registry, C.TypeRedirect, NewRedirect)
 }
 
 type Redirect struct {

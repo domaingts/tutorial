@@ -28,7 +28,7 @@ import (
 var ConfigureHTTP3ListenerFunc func(listener *listener.Listener, handler http.Handler, tlsConfig tls.ServerConfig, logger logger.Logger) (io.Closer, error)
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.NaiveInboundOptions](registry, C.TypeNaive, NewInbound)
+	inbound.Register(registry, C.TypeNaive, NewInbound)
 }
 
 type Inbound struct {

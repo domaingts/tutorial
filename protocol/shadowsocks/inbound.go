@@ -26,7 +26,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.ShadowsocksInboundOptions](registry, C.TypeShadowsocks, NewInbound)
+	inbound.Register(registry, C.TypeShadowsocks, NewInbound)
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.ShadowsocksInboundOptions) (adapter.Inbound, error) {

@@ -27,7 +27,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.TorOutboundOptions](registry, C.TypeTor, NewOutbound)
+	outbound.Register(registry, C.TypeTor, NewOutbound)
 }
 
 type Outbound struct {

@@ -11,11 +11,9 @@ const (
 	TypeHTTP         = "http"
 	TypeMixed        = "mixed"
 	TypeShadowsocks  = "shadowsocks"
-	TypeVMess        = "vmess"
 	TypeTrojan       = "trojan"
 	TypeNaive        = "naive"
 	TypeWireGuard    = "wireguard"
-	TypeHysteria     = "hysteria"
 	TypeTor          = "tor"
 	TypeSSH          = "ssh"
 	TypeShadowTLS    = "shadowtls"
@@ -52,16 +50,12 @@ func ProxyDisplayName(proxyType string) string {
 		return "Mixed"
 	case TypeShadowsocks:
 		return "Shadowsocks"
-	case TypeVMess:
-		return "VMess"
 	case TypeTrojan:
 		return "Trojan"
 	case TypeNaive:
 		return "Naive"
 	case TypeWireGuard:
 		return "WireGuard"
-	case TypeHysteria:
-		return "Hysteria"
 	case TypeTor:
 		return "Tor"
 	case TypeSSH:

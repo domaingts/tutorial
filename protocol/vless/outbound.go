@@ -24,7 +24,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.VLESSOutboundOptions](registry, C.TypeVLESS, NewOutbound)
+	outbound.Register(registry, C.TypeVLESS, NewOutbound)
 }
 
 type Outbound struct {

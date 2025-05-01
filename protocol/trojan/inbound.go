@@ -24,7 +24,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.TrojanInboundOptions](registry, C.TypeTrojan, NewInbound)
+	inbound.Register(registry, C.TypeTrojan, NewInbound)
 }
 
 var _ adapter.TCPInjectableInbound = (*Inbound)(nil)

@@ -32,7 +32,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.TunInboundOptions](registry, C.TypeTun, NewInbound)
+	inbound.Register(registry, C.TypeTun, NewInbound)
 }
 
 type Inbound struct {

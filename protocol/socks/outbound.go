@@ -20,7 +20,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.SOCKSOutboundOptions](registry, C.TypeSOCKS, NewOutbound)
+	outbound.Register(registry, C.TypeSOCKS, NewOutbound)
 }
 
 var _ adapter.Outbound = (*Outbound)(nil)

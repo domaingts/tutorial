@@ -2,7 +2,7 @@ module github.com/sagernet/sing-box
 
 go 1.24.2
 
-replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.5
+replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.6
 
 require (
 	github.com/caddyserver/certmagic v0.20.0

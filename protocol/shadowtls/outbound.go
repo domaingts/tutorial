@@ -19,7 +19,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.ShadowTLSOutboundOptions](registry, C.TypeShadowTLS, NewOutbound)
+	outbound.Register(registry, C.TypeShadowTLS, NewOutbound)
 }
 
 type Outbound struct {

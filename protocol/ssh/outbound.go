@@ -28,7 +28,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.SSHOutboundOptions](registry, C.TypeSSH, NewOutbound)
+	outbound.Register(registry, C.TypeSSH, NewOutbound)
 }
 
 var _ adapter.InterfaceUpdateListener = (*Outbound)(nil)

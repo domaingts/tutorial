@@ -20,7 +20,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.HTTPOutboundOptions](registry, C.TypeHTTP, NewOutbound)
+	outbound.Register(registry, C.TypeHTTP, NewOutbound)
 }
 
 type Outbound struct {

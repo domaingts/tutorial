@@ -23,7 +23,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.TrojanOutboundOptions](registry, C.TypeTrojan, NewOutbound)
+	outbound.Register(registry, C.TypeTrojan, NewOutbound)
 }
 
 type Outbound struct {

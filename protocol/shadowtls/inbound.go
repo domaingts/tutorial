@@ -21,7 +21,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.ShadowTLSInboundOptions](registry, C.TypeShadowTLS, NewInbound)
+	inbound.Register(registry, C.TypeShadowTLS, NewInbound)
 }
 
 type Inbound struct {
