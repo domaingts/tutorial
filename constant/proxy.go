@@ -15,7 +15,6 @@ const (
 	TypeTor          = "tor"
 	TypeSSH          = "ssh"
 	TypeVLESS        = "vless"
-	TypeHysteria2    = "hysteria2"
 )
 
 const (
@@ -53,8 +52,6 @@ func ProxyDisplayName(proxyType string) string {
 		return "SSH"
 	case TypeVLESS:
 		return "VLESS"
-	case TypeHysteria2:
-		return "Hysteria2"
 	case TypeSelector:
 		return "Selector"
 	case TypeURLTest:
