@@ -34,7 +34,6 @@ require (
 	github.com/sagernet/sing-quic v0.4.1-0.20250423030647-0eb05f373a76
 	github.com/sagernet/sing-shadowsocks v0.2.7
 	github.com/sagernet/sing-shadowsocks2 v0.2.0
-	github.com/sagernet/sing-shadowtls v0.2.0
 	github.com/sagernet/sing-tun v0.6.5
 	github.com/sagernet/sing-vmess v0.2.1
 	github.com/sagernet/smux v1.5.34-mod.2
@@ -90,6 +89,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/u-root/uio v0.0.0-20230220225925-ffce2a382923 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
+	github.com/xtls/reality v0.0.0-20240909153216-e26ae2305463 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect

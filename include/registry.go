@@ -34,7 +34,6 @@ func InboundRegistry() *inbound.Registry {
 	shadowsocks.RegisterInbound(registry)
 	vless.RegisterInbound(registry)
 
-	registerQUICInbounds(registry)
 	registerStubForRemovedInbounds(registry)
 
 	return registry
@@ -58,7 +57,6 @@ func OutboundRegistry() *outbound.Registry {
 	ssh.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
 
-	registerQUICOutbounds(registry)
 	registerWireGuardOutbound(registry)
 	registerStubForRemovedOutbounds(registry)
 
