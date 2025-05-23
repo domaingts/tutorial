@@ -1,6 +1,6 @@
 module github.com/sagernet/sing-box
 
-go 1.24.3
+go 1.24
 
 replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.9
 
@@ -29,7 +29,7 @@ require (
 	github.com/sagernet/quic-go v0.49.0-beta.1
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691
 	github.com/sagernet/sing v0.6.9
-	github.com/sagernet/sing-dns v0.4.2
+	github.com/sagernet/sing-dns v0.4.3
 	github.com/sagernet/sing-mux v0.3.2
 	github.com/sagernet/sing-quic v0.4.1-0.20250423030647-0eb05f373a76
 	github.com/sagernet/sing-shadowsocks v0.2.7
