@@ -14,6 +14,7 @@ import (
 
 	"github.com/sagernet/sing-box"
 	C "github.com/sagernet/sing-box/constant"
+	"github.com/sagernet/sing-box/experimental/libbox"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -170,6 +171,10 @@ func run() error {
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	defer signal.Stop(osSignals)
+	server := libbox.NewPProfServer(30000)
+	go func() {
+		server.Start()
+	}()
 	for {
 		instance, cancel, err := create()
 		if err != nil {
