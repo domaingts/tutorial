@@ -12,7 +12,6 @@ import (
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/ntp"
 )
@@ -154,19 +153,8 @@ func NewSTDServer(ctx context.Context, logger log.Logger, options option.Inbound
 	}
 	var tlsConfig *tls.Config
 	var acmeService adapter.Service
-	var err error
-	if options.ACME != nil && len(options.ACME.Domain) > 0 {
-		//nolint:staticcheck
-		tlsConfig, acmeService, err = startACME(ctx, common.PtrValueOrDefault(options.ACME))
-		if err != nil {
-			return nil, err
-		}
-		if options.Insecure {
-			return nil, errInsecureUnused
-		}
-	} else {
-		tlsConfig = &tls.Config{}
-	}
+
+	tlsConfig = &tls.Config{}
 	tlsConfig.Time = ntp.TimeFuncFromContext(ctx)
 	if options.ServerName != "" {
 		tlsConfig.ServerName = options.ServerName
