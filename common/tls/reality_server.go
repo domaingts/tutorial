@@ -1,5 +1,3 @@
-//go:build with_reality_server
-
 package tls
 
 import (
@@ -29,10 +27,6 @@ type RealityServerConfig struct {
 
 func NewRealityServer(ctx context.Context, logger log.Logger, options option.InboundTLSOptions) (*RealityServerConfig, error) {
 	var tlsConfig reality.Config
-
-	if options.ACME != nil && len(options.ACME.Domain) > 0 {
-		return nil, E.New("acme is unavailable in reality")
-	}
 	tlsConfig.Time = ntp.TimeFuncFromContext(ctx)
 	if options.ServerName != "" {
 		tlsConfig.ServerName = options.ServerName
