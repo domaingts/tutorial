@@ -15,8 +15,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=
 github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1/go.mod h1:+hnT3ywWDTAFrW5aE+u2Sa/wT555ZqwoCS+pk3p6ry4=
-github.com/domaingts/electricity v0.0.11 h1:IIxLzECN7L4Ndld7K7dcUgjTsUZgK+H0FY01NEJG/X0=
-github.com/domaingts/electricity v0.0.11/go.mod h1:JAoTTxNC4ai5tDQZikfwgvCNbg5KeBYjcp1wpK4FTwY=
+github.com/domaingts/electricity v0.0.12 h1:d5ZG062urZ4vhaVseBWcUPJDYVS7OgSSM3yAosrvZHE=
+github.com/domaingts/electricity v0.0.12/go.mod h1:JAoTTxNC4ai5tDQZikfwgvCNbg5KeBYjcp1wpK4FTwY=
 github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/go-chi/chi/v5 v5.2.1 h1:KOIHODQj58PmL80G2Eak4WdvUzjSJSm0vG72crDCqb8=

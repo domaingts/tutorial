@@ -2,7 +2,7 @@ module github.com/sagernet/sing-box
 
 go 1.24
 
-replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.11
+replace github.com/sagernet/reality => github.com/domaingts/electricity v0.0.12
 
 require (
 	github.com/cloudflare/circl v1.5.0
