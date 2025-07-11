@@ -25,12 +25,12 @@ require (
 	github.com/sagernet/quic-go v0.49.0-beta.1
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691
 	github.com/sagernet/sing v0.6.10
-	github.com/sagernet/sing-dns v0.4.5
+	github.com/sagernet/sing-dns v0.4.6
 	github.com/sagernet/sing-mux v0.3.2
-	github.com/sagernet/sing-quic v0.4.3
+	github.com/sagernet/sing-quic v0.4.4
 	github.com/sagernet/sing-shadowsocks v0.2.8
 	github.com/sagernet/sing-shadowsocks2 v0.2.1
-	github.com/sagernet/sing-tun v0.6.8
+	github.com/sagernet/sing-tun v0.6.9
 	github.com/sagernet/sing-vmess v0.2.3
 	github.com/sagernet/smux v1.5.34-mod.2
 	github.com/sagernet/utls v1.6.7
@@ -49,8 +49,6 @@ require (
 	google.golang.org/protobuf v1.33.0
 	howett.net/plist v1.0.1
 )
-
-//replace github.com/sagernet/sing => ../sing
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
