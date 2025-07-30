@@ -69,6 +69,7 @@ func NewRealityServer(ctx context.Context, logger log.Logger, options option.Inb
 		return nil, E.New("key is unavailable in reality")
 	}
 
+	tlsConfig.Show = options.Reality.Show
 	tlsConfig.SessionTicketsDisabled = true
 	tlsConfig.Type = N.NetworkTCP
 	tlsConfig.Dest = options.Reality.Handshake.ServerOptions.Build().String()
