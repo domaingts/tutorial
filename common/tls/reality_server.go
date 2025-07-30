@@ -14,7 +14,6 @@ import (
 	"github.com/sagernet/sing-box/common/dialer"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing/common/debug"
 	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
@@ -110,9 +109,7 @@ func NewRealityServer(ctx context.Context, logger log.Logger, options option.Inb
 		return handshakeDialer.DialContext(ctx, network, M.ParseSocksaddr(addr))
 	}
 
-	if debug.Enabled {
-		tlsConfig.Show = true
-	}
+	reality.DetectPostHandshakeRecordsLens(&tlsConfig)
 
 	return &RealityServerConfig{&tlsConfig}, nil
 }
