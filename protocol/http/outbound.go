@@ -20,7 +20,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register(registry, C.TypeHTTP, NewOutbound)
+	outbound.Register[option.HTTPOutboundOptions](registry, C.TypeHTTP, NewOutbound)
 }
 
 type Outbound struct {
@@ -30,7 +30,7 @@ type Outbound struct {
 }
 
 func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.HTTPOutboundOptions) (adapter.Outbound, error) {
-	outboundDialer, err := dialer.New(ctx, options.DialerOptions)
+	outboundDialer, err := dialer.New(ctx, options.DialerOptions, options.ServerIsDomain())
 	if err != nil {
 		return nil, err
 	}

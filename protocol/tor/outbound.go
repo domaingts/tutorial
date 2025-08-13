@@ -27,7 +27,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register(registry, C.TypeTor, NewOutbound)
+	outbound.Register[option.TorOutboundOptions](registry, C.TypeTor, NewOutbound)
 }
 
 type Outbound struct {
@@ -75,7 +75,7 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 		}
 		startConf.TorrcFile = torrcFile
 	}
-	outboundDialer, err := dialer.New(ctx, options.DialerOptions)
+	outboundDialer, err := dialer.New(ctx, options.DialerOptions, false)
 	if err != nil {
 		return nil, err
 	}
