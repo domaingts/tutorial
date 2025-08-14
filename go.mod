@@ -2,6 +2,8 @@ module github.com/sagernet/sing-box
 
 go 1.25
 
+replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.0
+
 require (
 	github.com/anytls/sing-anytls v0.0.8
 	github.com/caddyserver/certmagic v0.24.0
@@ -96,7 +98,6 @@ require (
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/kortschak/wol v0.0.0-20200729010619-da482cc4850a // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/libdns/libdns v1.1.0 // indirect
 	github.com/mdlayher/genetlink v1.3.2 // indirect
 	github.com/mdlayher/netlink v1.7.3-0.20250113171957-fbb4dce95f42 // indirect
