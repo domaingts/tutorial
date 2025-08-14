@@ -7,10 +7,10 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"net"
 	"time"
 
+	ec "github.com/domaingts/electricity"
 	"github.com/sagernet/sing-box/common/dialer"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
@@ -18,18 +18,16 @@ import (
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
 	"github.com/sagernet/sing/common/ntp"
-
-	utls "github.com/metacubex/utls"
 )
 
 var _ ServerConfigCompat = (*RealityServerConfig)(nil)
 
 type RealityServerConfig struct {
-	config *utls.RealityConfig
+	config *ec.Config
 }
 
 func NewRealityServer(ctx context.Context, logger log.Logger, options option.InboundTLSOptions) (*RealityServerConfig, error) {
-	var tlsConfig utls.RealityConfig
+	var tlsConfig ec.Config
 
 	if options.ACME != nil && len(options.ACME.Domain) > 0 {
 		return nil, E.New("acme is unavailable in reality")
@@ -75,11 +73,6 @@ func NewRealityServer(ctx context.Context, logger log.Logger, options option.Inb
 	}
 
 	tlsConfig.SessionTicketsDisabled = true
-	tlsConfig.Log = func(format string, v ...any) {
-		if logger != nil {
-			logger.Trace(fmt.Sprintf(format, v...))
-		}
-	}
 	tlsConfig.Type = N.NetworkTCP
 	tlsConfig.Dest = options.Reality.Handshake.ServerOptions.Build().String()
 
@@ -119,7 +112,7 @@ func NewRealityServer(ctx context.Context, logger log.Logger, options option.Inb
 		return handshakeDialer.DialContext(ctx, network, M.ParseSocksaddr(addr))
 	}
 
-	reality.DetectPostHandshakeRecordsLens(&tlsConfig)
+	go ec.DetectPostHandshakeRecordsLens(&tlsConfig)
 
 	return &RealityServerConfig{&tlsConfig}, nil
 }
@@ -161,7 +154,7 @@ func (c *RealityServerConfig) Server(conn net.Conn) (Conn, error) {
 }
 
 func (c *RealityServerConfig) ServerHandshake(ctx context.Context, conn net.Conn) (Conn, error) {
-	tlsConn, err := utls.RealityServer(ctx, conn, c.config)
+	tlsConn, err := ec.Server(ctx, conn, c.config)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +170,7 @@ func (c *RealityServerConfig) Clone() Config {
 var _ Conn = (*realityConnWrapper)(nil)
 
 type realityConnWrapper struct {
-	*utls.Conn
+	*ec.Conn
 }
 
 func (c *realityConnWrapper) ConnectionState() ConnectionState {
