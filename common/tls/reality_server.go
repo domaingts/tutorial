@@ -74,6 +74,7 @@ func NewRealityServer(ctx context.Context, logger log.Logger, options option.Inb
 
 	tlsConfig.SessionTicketsDisabled = true
 	tlsConfig.Type = N.NetworkTCP
+	tlsConfig.Show = options.Reality.Show
 	tlsConfig.Dest = options.Reality.Handshake.ServerOptions.Build().String()
 
 	tlsConfig.ServerNames = map[string]bool{options.ServerName: true}

@@ -24,7 +24,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.VLESSOutboundOptions](registry, C.TypeVLESS, NewOutbound)
+	outbound.Register(registry, C.TypeVLESS, NewOutbound)
 }
 
 type Outbound struct {
@@ -124,7 +124,6 @@ func (h *Outbound) InterfaceUpdated() {
 	if h.multiplexDialer != nil {
 		h.multiplexDialer.Reset()
 	}
-	return
 }
 
 func (h *Outbound) Close() error {
