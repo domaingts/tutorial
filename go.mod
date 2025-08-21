@@ -2,11 +2,11 @@ module github.com/sagernet/sing-box
 
 go 1.25
 
-replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.0
+replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.1
 
 require (
 	github.com/anytls/sing-anytls v0.0.8
-	github.com/caddyserver/certmagic v0.24.0
+	github.com/caddyserver/certmagic v0.23.0
 	github.com/coder/websocket v1.8.13
 	github.com/cretz/bine v0.2.0
 	github.com/domaingts/electricity v1.1.0
@@ -18,25 +18,25 @@ require (
 	github.com/libdns/alidns v1.0.5-libdns.v1.beta1
 	github.com/libdns/cloudflare v0.2.2-0.20250708034226-c574dccb31a6
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/metacubex/tfo-go v0.0.0-20241231083714-66613d49c422
+	github.com/metacubex/tfo-go v0.0.0-20250516165257-e29c16ae41d4
 	github.com/metacubex/utls v1.8.0
 	github.com/mholt/acmez/v3 v3.1.2
-	github.com/miekg/dns v1.1.68
+	github.com/miekg/dns v1.1.67
 	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/sagernet/asc-go v0.0.0-20241217030726-d563060fe4e1
 	github.com/sagernet/bbolt v0.0.0-20231014093535-ea5cb2fe9f0a
 	github.com/sagernet/cors v1.2.1
 	github.com/sagernet/fswatch v0.1.1
-	github.com/sagernet/gomobile v0.1.7
+	github.com/sagernet/gomobile v0.1.8
 	github.com/sagernet/gvisor v0.0.0-20250325023245-7a9c0f5725fb
 	github.com/sagernet/quic-go v0.52.0-beta.1
-	github.com/sagernet/sing v0.7.5
-	github.com/sagernet/sing-mux v0.3.2
+	github.com/sagernet/sing v0.7.6-0.20250815070458-d33ece7a184f
+	github.com/sagernet/sing-mux v0.3.3
 	github.com/sagernet/sing-quic v0.5.0
 	github.com/sagernet/sing-shadowsocks v0.2.8
 	github.com/sagernet/sing-shadowsocks2 v0.2.1
 	github.com/sagernet/sing-tun v0.7.0-beta.1
-	github.com/sagernet/sing-vmess v0.2.6
+	github.com/sagernet/sing-vmess v0.2.7
 	github.com/sagernet/smux v1.5.34-mod.2
 	github.com/sagernet/tailscale v1.80.3-mod.5
 	github.com/sagernet/wireguard-go v0.0.1-beta.7
@@ -47,13 +47,13 @@ require (
 	go.uber.org/zap v1.27.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.org/x/crypto v0.41.0
-	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6
+	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6
 	golang.org/x/mod v0.27.0
 	golang.org/x/net v0.43.0
 	golang.org/x/sys v0.35.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
-	google.golang.org/grpc v1.74.2
-	google.golang.org/protobuf v1.36.7
+	google.golang.org/grpc v1.73.0
+	google.golang.org/protobuf v1.36.6
 	howett.net/plist v1.0.1
 )
 
@@ -134,7 +134,7 @@ require (
 	golang.org/x/tools v0.36.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
 )

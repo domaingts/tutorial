@@ -71,25 +71,25 @@ func Context(
 	if service.FromContext[option.InboundOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.InboundRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.InboundOptionsRegistry](ctx, inboundRegistry)
-		ctx = service.ContextWith(ctx, inboundRegistry)
+		ctx = service.ContextWith[adapter.InboundRegistry](ctx, inboundRegistry)
 	}
 	if service.FromContext[option.OutboundOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.OutboundRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.OutboundOptionsRegistry](ctx, outboundRegistry)
-		ctx = service.ContextWith(ctx, outboundRegistry)
+		ctx = service.ContextWith[adapter.OutboundRegistry](ctx, outboundRegistry)
 	}
 	if service.FromContext[option.EndpointOptionsRegistry](ctx) == nil ||
 		service.FromContext[adapter.EndpointRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.EndpointOptionsRegistry](ctx, endpointRegistry)
-		ctx = service.ContextWith(ctx, endpointRegistry)
+		ctx = service.ContextWith[adapter.EndpointRegistry](ctx, endpointRegistry)
 	}
 	if service.FromContext[adapter.DNSTransportRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.DNSTransportOptionsRegistry](ctx, dnsTransportRegistry)
-		ctx = service.ContextWith(ctx, dnsTransportRegistry)
+		ctx = service.ContextWith[adapter.DNSTransportRegistry](ctx, dnsTransportRegistry)
 	}
 	if service.FromContext[adapter.ServiceRegistry](ctx) == nil {
 		ctx = service.ContextWith[option.ServiceOptionsRegistry](ctx, serviceRegistry)
-		ctx = service.ContextWith(ctx, serviceRegistry)
+		ctx = service.ContextWith[adapter.ServiceRegistry](ctx, serviceRegistry)
 	}
 	return ctx
 }
@@ -314,15 +314,15 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "initialize service[", i, "]")
 		}
 	}
-	outboundManager.Initialize(common.Must1(
-		direct.NewOutbound(
+	outboundManager.Initialize(func() (adapter.Outbound, error) {
+		return direct.NewOutbound(
 			ctx,
 			router,
 			logFactory.NewLogger("outbound/direct"),
 			"direct",
 			option.DirectOutboundOptions{},
-		),
-	))
+		)
+	})
 	dnsTransportManager.Initialize(common.Must1(
 		local.NewTransport(
 			ctx,
@@ -349,7 +349,7 @@ func New(options Options) (*Box, error) {
 			return nil, E.Cause(err, "create clash-server")
 		}
 		router.AppendTracker(clashServer)
-		service.MustRegister(ctx, clashServer)
+		service.MustRegister[adapter.ClashServer](ctx, clashServer)
 		internalServices = append(internalServices, clashServer)
 	}
 	if needV2RayAPI {
@@ -360,7 +360,7 @@ func New(options Options) (*Box, error) {
 		if v2rayServer.StatsService() != nil {
 			router.AppendTracker(v2rayServer.StatsService())
 			internalServices = append(internalServices, v2rayServer)
-			service.MustRegister(ctx, v2rayServer)
+			service.MustRegister[adapter.V2RayServer](ctx, v2rayServer)
 		}
 	}
 	if ntpOptions.Enabled {
