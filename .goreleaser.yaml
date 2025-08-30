@@ -6,6 +6,7 @@ builds:
   - id: main
     env:
       - CGO_ENABLED=0
+      - GOEXPERIMENT=greenteagc
     flags:
       - -v
       - -trimpath
