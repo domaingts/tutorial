@@ -6,7 +6,7 @@ builds:
   - id: main
     env:
       - CGO_ENABLED=0
-      - GOEXPERIMENT=greenteagc
+      - GOEXPERIMENT=greenteagc,jsonv2
     flags:
       - -v
       - -trimpath
