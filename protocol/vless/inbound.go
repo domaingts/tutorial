@@ -91,7 +91,7 @@ func (h *Inbound) Start(stage adapter.StartStage) error {
 			return err
 		}
 	}
-	return nil
+	return h.listener.Start()
 }
 
 func (h *Inbound) Close() error {
