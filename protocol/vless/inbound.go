@@ -14,7 +14,6 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/transport/v2ray"
 	"github.com/sagernet/sing-vmess/packetaddr"
 	"github.com/sagernet/sing-vmess/vless"
 	"github.com/sagernet/sing/common"
@@ -28,7 +27,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.VLESSInboundOptions](registry, C.TypeVLESS, NewInbound)
+	inbound.Register(registry, C.TypeVLESS, NewInbound)
 }
 
 var _ adapter.TCPInjectableInbound = (*Inbound)(nil)
@@ -42,7 +41,6 @@ type Inbound struct {
 	users     []option.VLESSUser
 	service   *vless.Service[int]
 	tlsConfig tls.ServerConfig
-	transport adapter.V2RayServerTransport
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSInboundOptions) (adapter.Inbound, error) {
@@ -73,12 +71,6 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 			return nil, err
 		}
 	}
-	if options.Transport != nil {
-		inbound.transport, err = v2ray.NewServerTransport(ctx, logger, common.PtrValueOrDefault(options.Transport), inbound.tlsConfig, (*inboundTransportHandler)(inbound))
-		if err != nil {
-			return nil, E.Cause(err, "create server transport: ", options.Transport.Type)
-		}
-	}
 	inbound.listener = listener.New(listener.Options{
 		Context:           ctx,
 		Logger:            logger,
@@ -99,33 +91,6 @@ func (h *Inbound) Start(stage adapter.StartStage) error {
 			return err
 		}
 	}
-	if h.transport == nil {
-		return h.listener.Start()
-	}
-	if common.Contains(h.transport.Network(), N.NetworkTCP) {
-		tcpListener, err := h.listener.ListenTCP()
-		if err != nil {
-			return err
-		}
-		go func() {
-			sErr := h.transport.Serve(tcpListener)
-			if sErr != nil && !E.IsClosed(sErr) {
-				h.logger.Error("transport serve error: ", sErr)
-			}
-		}()
-	}
-	if common.Contains(h.transport.Network(), N.NetworkUDP) {
-		udpConn, err := h.listener.ListenUDP()
-		if err != nil {
-			return err
-		}
-		go func() {
-			sErr := h.transport.ServePacket(udpConn)
-			if sErr != nil && !E.IsClosed(sErr) {
-				h.logger.Error("transport serve error: ", sErr)
-			}
-		}()
-	}
 	return nil
 }
 
@@ -134,12 +99,11 @@ func (h *Inbound) Close() error {
 		h.service,
 		h.listener,
 		h.tlsConfig,
-		h.transport,
 	)
 }
 
 func (h *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
-	if h.tlsConfig != nil && h.transport == nil {
+	if h.tlsConfig != nil {
 		tlsConn, err := tls.ServerHandshake(ctx, conn, h.tlsConfig)
 		if err != nil {
 			N.CloseOnHandshakeFailure(conn, onClose, err)

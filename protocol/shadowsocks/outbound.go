@@ -11,7 +11,6 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/transport/sip003"
 	"github.com/sagernet/sing-shadowsocks2"
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/common/bufio"
@@ -23,7 +22,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.ShadowsocksOutboundOptions](registry, C.TypeShadowsocks, NewOutbound)
+	outbound.Register(registry, C.TypeShadowsocks, NewOutbound)
 }
 
 type Outbound struct {
@@ -32,7 +31,6 @@ type Outbound struct {
 	dialer          N.Dialer
 	method          shadowsocks.Method
 	serverAddr      M.Socksaddr
-	plugin          sip003.Plugin
 	uotClient       *uot.Client
 	multiplexDialer *mux.Client
 }
@@ -54,12 +52,6 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 		dialer:     outboundDialer,
 		method:     method,
 		serverAddr: options.ServerOptions.Build(),
-	}
-	if options.Plugin != "" {
-		outbound.plugin, err = sip003.CreatePlugin(ctx, options.Plugin, options.PluginOptions, router, outbound.dialer, outbound.serverAddr)
-		if err != nil {
-			return nil, err
-		}
 	}
 	uotOptions := common.PtrValueOrDefault(options.UDPOverTCP)
 	if !uotOptions.Enabled {
@@ -144,13 +136,7 @@ func (h *shadowsocksDialer) DialContext(ctx context.Context, network string, des
 	metadata.Destination = destination
 	switch N.NetworkName(network) {
 	case N.NetworkTCP:
-		var outConn net.Conn
-		var err error
-		if h.plugin != nil {
-			outConn, err = h.plugin.DialContext(ctx)
-		} else {
-			outConn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
-		}
+		outConn, err := h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
 		if err != nil {
 			return nil, err
 		}

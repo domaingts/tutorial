@@ -12,7 +12,6 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/transport/v2ray"
 	"github.com/sagernet/sing-vmess/packetaddr"
 	"github.com/sagernet/sing-vmess/vless"
 	"github.com/sagernet/sing/common"
@@ -35,7 +34,6 @@ type Outbound struct {
 	serverAddr      M.Socksaddr
 	multiplexDialer *mux.Client
 	tlsConfig       tls.Config
-	transport       adapter.V2RayClientTransport
 	packetAddr      bool
 	xudp            bool
 }
@@ -55,12 +53,6 @@ func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextL
 		outbound.tlsConfig, err = tls.NewClient(ctx, options.Server, common.PtrValueOrDefault(options.TLS))
 		if err != nil {
 			return nil, err
-		}
-	}
-	if options.Transport != nil {
-		outbound.transport, err = v2ray.NewClientTransport(ctx, outbound.dialer, outbound.serverAddr, common.PtrValueOrDefault(options.Transport), outbound.tlsConfig)
-		if err != nil {
-			return nil, E.Cause(err, "create client transport: ", options.Transport.Type)
 		}
 	}
 	if options.PacketEncoding == nil {
@@ -118,16 +110,13 @@ func (h *Outbound) ListenPacket(ctx context.Context, destination M.Socksaddr) (n
 }
 
 func (h *Outbound) InterfaceUpdated() {
-	if h.transport != nil {
-		h.transport.Close()
-	}
 	if h.multiplexDialer != nil {
 		h.multiplexDialer.Reset()
 	}
 }
 
 func (h *Outbound) Close() error {
-	return common.Close(common.PtrOrNil(h.multiplexDialer), h.transport)
+	return common.Close(common.PtrOrNil(h.multiplexDialer))
 }
 
 type vlessDialer Outbound
@@ -138,13 +127,10 @@ func (h *vlessDialer) DialContext(ctx context.Context, network string, destinati
 	metadata.Destination = destination
 	var conn net.Conn
 	var err error
-	if h.transport != nil {
-		conn, err = h.transport.DialContext(ctx)
-	} else {
-		conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
-		if err == nil && h.tlsConfig != nil {
-			conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
-		}
+
+	conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
+	if err == nil && h.tlsConfig != nil {
+		conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
 	}
 	if err != nil {
 		return nil, err
@@ -181,13 +167,9 @@ func (h *vlessDialer) ListenPacket(ctx context.Context, destination M.Socksaddr)
 	metadata.Destination = destination
 	var conn net.Conn
 	var err error
-	if h.transport != nil {
-		conn, err = h.transport.DialContext(ctx)
-	} else {
-		conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
-		if err == nil && h.tlsConfig != nil {
-			conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
-		}
+	conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
+	if err == nil && h.tlsConfig != nil {
+		conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
 	}
 	if err != nil {
 		common.Close(conn)
