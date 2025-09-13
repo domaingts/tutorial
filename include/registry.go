@@ -65,7 +65,6 @@ func OutboundRegistry() *outbound.Registry {
 	shadowsocks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
 	anytls.RegisterOutbound(registry)
-	registerWireGuardOutbound(registry)
 	registerStubForRemovedOutbounds(registry)
 
 	return registry
@@ -74,7 +73,6 @@ func OutboundRegistry() *outbound.Registry {
 func EndpointRegistry() *endpoint.Registry {
 	registry := endpoint.NewRegistry()
 
-	registerWireGuardEndpoint(registry)
 	registerTailscaleEndpoint(registry)
 
 	return registry
