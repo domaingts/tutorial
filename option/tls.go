@@ -74,8 +74,7 @@ func (o *OutboundTLSOptionsContainer) ReplaceOutboundTLSOptions(options *Outboun
 
 type InboundRealityOptions struct {
 	Enabled           bool                           `json:"enabled,omitempty"`
-	Show              bool                           `json:"show,omitzero"`
-	Handshake         InboundRealityHandshakeOptions `json:"handshake"`
+	Handshake         InboundRealityHandshakeOptions `json:"handshake,omitempty"`
 	PrivateKey        string                         `json:"private_key,omitempty"`
 	ShortID           badoption.Listable[string]     `json:"short_id,omitempty"`
 	MaxTimeDifference badoption.Duration             `json:"max_time_difference,omitempty"`

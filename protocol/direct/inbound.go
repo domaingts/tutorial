@@ -19,7 +19,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register[option.DirectInboundOptions](registry, C.TypeDirect, NewInbound)
+	inbound.Register(registry, C.TypeDirect, NewInbound)
 }
 
 type Inbound struct {

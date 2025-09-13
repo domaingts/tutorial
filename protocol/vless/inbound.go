@@ -28,7 +28,7 @@ import (
 )
 
 func RegisterInbound(registry *inbound.Registry) {
-	inbound.Register(registry, C.TypeVLESS, NewInbound)
+	inbound.Register[option.VLESSInboundOptions](registry, C.TypeVLESS, NewInbound)
 }
 
 var _ adapter.TCPInjectableInbound = (*Inbound)(nil)
