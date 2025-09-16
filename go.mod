@@ -5,7 +5,6 @@ go 1.25
 replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.1
 
 require (
-	github.com/anytls/sing-anytls v0.0.8
 	github.com/caddyserver/certmagic v0.25.0
 	github.com/coder/websocket v1.8.14
 	github.com/domaingts/electricity v1.1.0
@@ -52,6 +51,7 @@ require (
 	google.golang.org/grpc v1.75.1
 	google.golang.org/protobuf v1.36.9
 	howett.net/plist v1.0.1
+	lukechampine.com/blake3 v1.4.1
 )
 
 require (
@@ -133,5 +133,4 @@ require (
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250908214217-97024824d090 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	lukechampine.com/blake3 v1.4.1 // indirect
 )

@@ -2,8 +2,13 @@ package vless
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
 	"net"
 	"os"
+	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/adapter/inbound"
@@ -14,6 +19,7 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
+	"github.com/sagernet/sing-box/protocol/vless/encryption"
 	"github.com/sagernet/sing-vmess/packetaddr"
 	"github.com/sagernet/sing-vmess/vless"
 	"github.com/sagernet/sing/common"
@@ -34,13 +40,14 @@ var _ adapter.TCPInjectableInbound = (*Inbound)(nil)
 
 type Inbound struct {
 	inbound.Adapter
-	ctx       context.Context
-	router    adapter.ConnectionRouterEx
-	logger    logger.ContextLogger
-	listener  *listener.Listener
-	users     []option.VLESSUser
-	service   *vless.Service[int]
-	tlsConfig tls.ServerConfig
+	ctx        context.Context
+	router     adapter.ConnectionRouterEx
+	logger     logger.ContextLogger
+	listener   *listener.Listener
+	users      []option.VLESSUser
+	service    *vless.Service[int]
+	tlsConfig  tls.ServerConfig
+	decryption *encryption.ServerInstance
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSInboundOptions) (adapter.Inbound, error) {
@@ -69,6 +76,67 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 		inbound.tlsConfig, err = tls.NewServer(ctx, logger, common.PtrValueOrDefault(options.TLS))
 		if err != nil {
 			return nil, err
+		}
+	}
+	if options.Decryption != nil {
+		result := func() bool {
+			decryption := *options.Decryption
+			s := strings.Split(decryption, ".")
+			if len(s) < 4 || s[0] != "mlkem768x25519plus" {
+				return false
+			}
+			var xorMode int
+			switch s[1] {
+			case "native":
+			case "xorpub":
+				xorMode = 1
+			case "random":
+				xorMode = 2
+			default:
+				return false
+			}
+			t := strings.SplitN(strings.TrimSuffix(s[2], "s"), "-", 2)
+			i, err := strconv.Atoi(t[0])
+			if err != nil {
+				return false
+			}
+			secondsFrom := int64(i)
+			var secondsTo int64
+			if len(t) == 2 {
+				i, err := strconv.Atoi(t[1])
+				if err != nil {
+					return false
+				}
+				secondsTo = int64(i)
+			}
+			padding := 0
+			var nfsSkeysBytes [][]byte
+			for r := range slices.Values(s[3:]) {
+				if len(r) < 20 {
+					padding += len(r) + 1
+					continue
+				}
+				if b, _ := base64.RawURLEncoding.DecodeString(r); len(b) != 32 && len(b) != 64 {
+					return false
+				} else {
+					nfsSkeysBytes = append(nfsSkeysBytes, b)
+				}
+			}
+			decryption = decryption[27+len(s[2]):]
+			var paddingStr string
+			if padding > 0 {
+				paddingStr = decryption[:padding-1]
+			}
+			inbound.decryption = &encryption.ServerInstance{}
+			err = inbound.decryption.Init(nfsSkeysBytes, uint32(xorMode), secondsFrom, secondsTo, paddingStr)
+			if err != nil {
+				logger.ErrorContext(ctx, E.Cause(err, "initalize decryption failed with ", *options.Decryption))
+				return false
+			}
+			return true
+		}()
+		if !result {
+			return nil, errors.New(`VLESS settings: unsupported "decryption": ` + *options.Decryption)
 		}
 	}
 	inbound.listener = listener.New(listener.Options{
@@ -103,6 +171,15 @@ func (h *Inbound) Close() error {
 }
 
 func (h *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata adapter.InboundContext, onClose N.CloseHandlerFunc) {
+	if h.decryption != nil {
+		decryptedConn, err := h.decryption.Handshake(conn, nil)
+		if err != nil {
+			N.CloseOnHandshakeFailure(conn, onClose, err)
+			h.logger.ErrorContext(ctx, E.Cause(err, "process connection from ", metadata.Source, ": Decryption"))
+			return
+		}
+		conn = decryptedConn
+	}
 	if h.tlsConfig != nil {
 		tlsConn, err := tls.ServerHandshake(ctx, conn, h.tlsConfig)
 		if err != nil {

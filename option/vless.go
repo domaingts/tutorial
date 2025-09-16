@@ -4,7 +4,8 @@ type VLESSInboundOptions struct {
 	ListenOptions
 	Users []VLESSUser `json:"users,omitempty"`
 	InboundTLSOptionsContainer
-	Multiplex *InboundMultiplexOptions `json:"multiplex,omitempty"`
+	Multiplex  *InboundMultiplexOptions `json:"multiplex,omitempty"`
+	Decryption *string                   `json:"decryption,omitzero"`
 }
 
 type VLESSUser struct {

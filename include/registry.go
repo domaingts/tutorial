@@ -13,7 +13,6 @@ import (
 	"github.com/sagernet/sing-box/dns/transport/fakeip"
 	"github.com/sagernet/sing-box/dns/transport/hosts"
 	"github.com/sagernet/sing-box/dns/transport/local"
-	"github.com/sagernet/sing-box/protocol/anytls"
 	"github.com/sagernet/sing-box/protocol/block"
 	"github.com/sagernet/sing-box/protocol/direct"
 	protocolDNS "github.com/sagernet/sing-box/protocol/dns"
@@ -43,7 +42,6 @@ func InboundRegistry() *inbound.Registry {
 
 	shadowsocks.RegisterInbound(registry)
 	vless.RegisterInbound(registry)
-	anytls.RegisterInbound(registry)
 
 	registerStubForRemovedInbounds(registry)
 
@@ -64,7 +62,6 @@ func OutboundRegistry() *outbound.Registry {
 	socks.RegisterOutbound(registry)
 	shadowsocks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
-	anytls.RegisterOutbound(registry)
 	registerStubForRemovedOutbounds(registry)
 
 	return registry
