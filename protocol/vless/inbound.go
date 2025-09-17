@@ -19,7 +19,6 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing-box/protocol/vless/encryption"
 	"github.com/sagernet/sing-vmess/packetaddr"
 	"github.com/sagernet/sing-vmess/vless"
 	"github.com/sagernet/sing/common"
@@ -30,6 +29,7 @@ import (
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
+	"github.com/domaingts/venc"
 )
 
 func RegisterInbound(registry *inbound.Registry) {
@@ -47,7 +47,7 @@ type Inbound struct {
 	users      []option.VLESSUser
 	service    *vless.Service[int]
 	tlsConfig  tls.ServerConfig
-	decryption *encryption.ServerInstance
+	decryption *venc.ServerInstance
 }
 
 func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options option.VLESSInboundOptions) (adapter.Inbound, error) {
@@ -127,7 +127,7 @@ func NewInbound(ctx context.Context, router adapter.Router, logger log.ContextLo
 			if padding > 0 {
 				paddingStr = decryption[:padding-1]
 			}
-			inbound.decryption = &encryption.ServerInstance{}
+			inbound.decryption = &venc.ServerInstance{}
 			err = inbound.decryption.Init(nfsSkeysBytes, uint32(xorMode), secondsFrom, secondsTo, paddingStr)
 			if err != nil {
 				logger.ErrorContext(ctx, E.Cause(err, "initalize decryption failed with ", *options.Decryption))
@@ -179,8 +179,7 @@ func (h *Inbound) NewConnectionEx(ctx context.Context, conn net.Conn, metadata a
 			return
 		}
 		conn = decryptedConn
-	}
-	if h.tlsConfig != nil {
+	} else if h.tlsConfig != nil {
 		tlsConn, err := tls.ServerHandshake(ctx, conn, h.tlsConfig)
 		if err != nil {
 			N.CloseOnHandshakeFailure(conn, onClose, err)
