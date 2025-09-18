@@ -37,8 +37,8 @@ github.com/digitalocean/go-smbios v0.0.0-20180907143718-390a4f403a8e h1:vUmf0yez
 github.com/digitalocean/go-smbios v0.0.0-20180907143718-390a4f403a8e/go.mod h1:YTIHhz/QFSYnu/EhlF2SpU2Uk+32abacUYA5ZPljz1A=
 github.com/domaingts/electricity v1.1.0 h1:QEnqLRn/hrirJ2WExTCANwdY9wcXVVF40F6IOVT6KW8=
 github.com/domaingts/electricity v1.1.0/go.mod h1:Ef6y8Fcmf4CL3CFMXPbZ9hFKgPtfAe2rlIE505kVrPA=
-github.com/domaingts/sing-vmess v1.0.2 h1:pYCvwNsJKW3lB4XnbccPKfD/2EZeHQ8PdAfw6RXW/20=
-github.com/domaingts/sing-vmess v1.0.2/go.mod h1:jABUxFrpYsZEmBC5f6dXH1yJZ061l85ZFhj9F6GRQgI=
+github.com/domaingts/sing-vmess v1.0.3 h1:FxKvFDX3+rsK4q4fVHTLnME1rgRekQCkLWqgps8cvgI=
+github.com/domaingts/sing-vmess v1.0.3/go.mod h1:PshzAcTOzGT7NGO3CdsDCc9ptmMIst0CQcyZOvonqHY=
 github.com/domaingts/venc v0.0.1 h1:d93XTDKWT8i/3XeH1lnnBBdSBR+7ZKtDflocQC67Sj8=
 github.com/domaingts/venc v0.0.1/go.mod h1:jfyn/uuGaaThWEOs809Oj+pctD1UNytc2W9WFtl9DQU=
 github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=

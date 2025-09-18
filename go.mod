@@ -2,7 +2,7 @@ module github.com/sagernet/sing-box
 
 go 1.25
 
-replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.2
+replace github.com/sagernet/sing-vmess => github.com/domaingts/sing-vmess v1.0.3
 
 require (
 	github.com/caddyserver/certmagic v0.25.0
