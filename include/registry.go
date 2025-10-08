@@ -3,7 +3,7 @@ package include
 import (
 	"context"
 
-	box "github.com/sagernet/sing-box"
+	"github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/adapter/endpoint"
 	"github.com/sagernet/sing-box/adapter/inbound"
 	"github.com/sagernet/sing-box/adapter/outbound"
@@ -21,6 +21,7 @@ import (
 	"github.com/sagernet/sing-box/protocol/redirect"
 	"github.com/sagernet/sing-box/protocol/shadowsocks"
 	"github.com/sagernet/sing-box/protocol/socks"
+	"github.com/sagernet/sing-box/protocol/tun"
 	"github.com/sagernet/sing-box/protocol/vless"
 	"github.com/sagernet/sing-box/service/resolved"
 	"github.com/sagernet/sing-box/service/ssmapi"
@@ -33,6 +34,7 @@ func Context(ctx context.Context) context.Context {
 func InboundRegistry() *inbound.Registry {
 	registry := inbound.NewRegistry()
 
+	tun.RegisterInbound(registry)
 	redirect.RegisterRedirect(registry)
 	redirect.RegisterTProxy(registry)
 	direct.RegisterInbound(registry)
@@ -62,6 +64,7 @@ func OutboundRegistry() *outbound.Registry {
 	socks.RegisterOutbound(registry)
 	shadowsocks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
+
 	registerStubForRemovedOutbounds(registry)
 
 	return registry
