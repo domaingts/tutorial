@@ -72,9 +72,6 @@ func OutboundRegistry() *outbound.Registry {
 
 func EndpointRegistry() *endpoint.Registry {
 	registry := endpoint.NewRegistry()
-
-	registerTailscaleEndpoint(registry)
-
 	return registry
 }
 
@@ -90,9 +87,6 @@ func DNSTransportRegistry() *dns.TransportRegistry {
 	fakeip.RegisterTransport(registry)
 	resolved.RegisterTransport(registry)
 
-	registerDHCPTransport(registry)
-	registerTailscaleTransport(registry)
-
 	return registry
 }
 
@@ -102,7 +96,6 @@ func ServiceRegistry() *service.Registry {
 	resolved.RegisterService(registry)
 	ssmapi.RegisterService(registry)
 
-	registerDERPService(registry)
 
 	return registry
 }
