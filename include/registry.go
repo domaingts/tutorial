@@ -19,7 +19,6 @@ import (
 	"github.com/sagernet/sing-box/protocol/group"
 	"github.com/sagernet/sing-box/protocol/mixed"
 	"github.com/sagernet/sing-box/protocol/redirect"
-	"github.com/sagernet/sing-box/protocol/shadowsocks"
 	"github.com/sagernet/sing-box/protocol/socks"
 	"github.com/sagernet/sing-box/protocol/tun"
 	"github.com/sagernet/sing-box/protocol/vless"
@@ -42,7 +41,6 @@ func InboundRegistry() *inbound.Registry {
 	socks.RegisterInbound(registry)
 	mixed.RegisterInbound(registry)
 
-	shadowsocks.RegisterInbound(registry)
 	vless.RegisterInbound(registry)
 
 	registerStubForRemovedInbounds(registry)
@@ -62,7 +60,6 @@ func OutboundRegistry() *outbound.Registry {
 	group.RegisterURLTest(registry)
 
 	socks.RegisterOutbound(registry)
-	shadowsocks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
 
 	registerStubForRemovedOutbounds(registry)

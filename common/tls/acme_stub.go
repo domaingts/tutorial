@@ -1,5 +1,3 @@
-//go:build !with_acme
-
 package tls
 
 import (
