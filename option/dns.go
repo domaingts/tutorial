@@ -242,44 +242,6 @@ func (o *DNSServerOptions) Upgrade(ctx context.Context) error {
 		if serverAddr.Port != 0 && serverAddr.Port != 53 {
 			remoteOptions.ServerPort = serverAddr.Port
 		}
-	case C.DNSTypeTLS, C.DNSTypeQUIC:
-		o.Type = serverType
-		if serverURL == nil {
-			return E.New("invalid server address")
-		}
-		serverAddr := M.ParseSocksaddr(serverURL.Host)
-		if !serverAddr.IsValid() {
-			return E.New("invalid server address")
-		}
-		remoteOptions.Server = serverAddr.AddrString()
-		if serverAddr.Port != 0 && serverAddr.Port != 853 {
-			remoteOptions.ServerPort = serverAddr.Port
-		}
-		o.Options = &RemoteTLSDNSServerOptions{
-			RemoteDNSServerOptions: remoteOptions,
-		}
-	case C.DNSTypeHTTPS, C.DNSTypeHTTP3:
-		o.Type = serverType
-		httpsOptions := RemoteHTTPSDNSServerOptions{
-			RemoteTLSDNSServerOptions: RemoteTLSDNSServerOptions{
-				RemoteDNSServerOptions: remoteOptions,
-			},
-		}
-		o.Options = &httpsOptions
-		if serverURL == nil {
-			return E.New("invalid server address")
-		}
-		serverAddr := M.ParseSocksaddr(serverURL.Host)
-		if !serverAddr.IsValid() {
-			return E.New("invalid server address")
-		}
-		httpsOptions.Server = serverAddr.AddrString()
-		if serverAddr.Port != 0 && serverAddr.Port != 443 {
-			httpsOptions.ServerPort = serverAddr.Port
-		}
-		if serverURL.Path != "/dns-query" {
-			httpsOptions.Path = serverURL.Path
-		}
 	case "rcode":
 		var rcode int
 		if serverURL == nil {
