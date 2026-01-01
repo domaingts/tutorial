@@ -237,8 +237,6 @@ func (h *Inbound) newPacketConnectionEx(ctx context.Context, conn N.PacketConn, 
 	h.router.RoutePacketConnectionEx(ctx, conn, metadata, onClose)
 }
 
-var _ adapter.V2RayServerTransportHandler = (*inboundTransportHandler)(nil)
-
 type inboundTransportHandler Inbound
 
 func (h *inboundTransportHandler) NewConnectionEx(ctx context.Context, conn net.Conn, source M.Socksaddr, destination M.Socksaddr, onClose N.CloseHandlerFunc) {

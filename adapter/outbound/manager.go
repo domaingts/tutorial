@@ -21,7 +21,6 @@ var _ adapter.OutboundManager = (*Manager)(nil)
 type Manager struct {
 	logger                  log.ContextLogger
 	registry                adapter.OutboundRegistry
-	endpoint                adapter.EndpointManager
 	defaultTag              string
 	access                  sync.RWMutex
 	started                 bool
@@ -33,11 +32,10 @@ type Manager struct {
 	defaultOutboundFallback func() (adapter.Outbound, error)
 }
 
-func NewManager(logger logger.ContextLogger, registry adapter.OutboundRegistry, endpoint adapter.EndpointManager, defaultTag string) *Manager {
+func NewManager(logger logger.ContextLogger, registry adapter.OutboundRegistry, defaultTag string) *Manager {
 	return &Manager{
 		logger:        logger,
 		registry:      registry,
-		endpoint:      endpoint,
 		defaultTag:    defaultTag,
 		outboundByTag: make(map[string]adapter.Outbound),
 		dependByTag:   make(map[string][]string),
@@ -56,14 +54,6 @@ func (m *Manager) Start(stage adapter.StartStage) error {
 	m.started = true
 	m.stage = stage
 	if stage == adapter.StartStateStart {
-		if m.defaultTag != "" && m.defaultOutbound == nil {
-			defaultEndpoint, loaded := m.endpoint.Get(m.defaultTag)
-			if !loaded {
-				m.access.Unlock()
-				return E.New("default outbound not found: ", m.defaultTag)
-			}
-			m.defaultOutbound = defaultEndpoint
-		}
 		if m.defaultOutbound == nil {
 			directOutbound, err := m.defaultOutboundFallback()
 			if err != nil {
@@ -76,7 +66,7 @@ func (m *Manager) Start(stage adapter.StartStage) error {
 		}
 		outbounds := m.outbounds
 		m.access.Unlock()
-		return m.startOutbounds(append(outbounds, common.Map(m.endpoint.Endpoints(), func(it adapter.Endpoint) adapter.Outbound { return it })...))
+		return m.startOutbounds(outbounds)
 	} else {
 		outbounds := m.outbounds
 		m.access.Unlock()
@@ -191,10 +181,7 @@ func (m *Manager) Outbound(tag string) (adapter.Outbound, bool) {
 	m.access.RLock()
 	outbound, found := m.outboundByTag[tag]
 	m.access.RUnlock()
-	if found {
-		return outbound, true
-	}
-	return m.endpoint.Get(tag)
+	return outbound, found
 }
 
 func (m *Manager) Default() adapter.Outbound {

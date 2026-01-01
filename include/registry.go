@@ -3,11 +3,9 @@ package include
 import (
 	"context"
 
-	"github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/adapter/endpoint"
+	box "github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/adapter/inbound"
 	"github.com/sagernet/sing-box/adapter/outbound"
-	"github.com/sagernet/sing-box/adapter/service"
 	"github.com/sagernet/sing-box/dns"
 	"github.com/sagernet/sing-box/dns/transport"
 	"github.com/sagernet/sing-box/dns/transport/fakeip"
@@ -22,12 +20,10 @@ import (
 	"github.com/sagernet/sing-box/protocol/socks"
 	"github.com/sagernet/sing-box/protocol/tun"
 	"github.com/sagernet/sing-box/protocol/vless"
-	"github.com/sagernet/sing-box/service/resolved"
-	"github.com/sagernet/sing-box/service/ssmapi"
 )
 
 func Context(ctx context.Context) context.Context {
-	return box.Context(ctx, InboundRegistry(), OutboundRegistry(), EndpointRegistry(), DNSTransportRegistry(), ServiceRegistry())
+	return box.Context(ctx, InboundRegistry(), OutboundRegistry(), DNSTransportRegistry())
 }
 
 func InboundRegistry() *inbound.Registry {
@@ -67,11 +63,6 @@ func OutboundRegistry() *outbound.Registry {
 	return registry
 }
 
-func EndpointRegistry() *endpoint.Registry {
-	registry := endpoint.NewRegistry()
-	return registry
-}
-
 func DNSTransportRegistry() *dns.TransportRegistry {
 	registry := dns.NewTransportRegistry()
 
@@ -82,17 +73,6 @@ func DNSTransportRegistry() *dns.TransportRegistry {
 	hosts.RegisterTransport(registry)
 	local.RegisterTransport(registry)
 	fakeip.RegisterTransport(registry)
-	resolved.RegisterTransport(registry)
-
-	return registry
-}
-
-func ServiceRegistry() *service.Registry {
-	registry := service.NewRegistry()
-
-	resolved.RegisterService(registry)
-	ssmapi.RegisterService(registry)
-
 
 	return registry
 }

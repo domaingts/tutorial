@@ -15,7 +15,6 @@ func init() {
 		os.Stderr,
 		"",
 		nil,
-		false,
 	).Logger()
 }
 

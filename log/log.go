@@ -13,7 +13,6 @@ import (
 type Options struct {
 	Context        context.Context
 	Options        option.LogOptions
-	Observable     bool
 	DefaultWriter  io.Writer
 	BaseTime       time.Time
 	PlatformWriter PlatformWriter
@@ -55,7 +54,6 @@ func New(options Options) (Factory, error) {
 		logWriter,
 		logFilePath,
 		options.PlatformWriter,
-		options.Observable,
 	)
 	if logOptions.Level != "" {
 		logLevel, err := ParseLevel(logOptions.Level)

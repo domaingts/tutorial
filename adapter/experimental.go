@@ -30,11 +30,6 @@ type URLTestHistoryStorage interface {
 	Close() error
 }
 
-type V2RayServer interface {
-	LifecycleService
-	StatsService() ConnectionTracker
-}
-
 type CacheFile interface {
 	LifecycleService
 

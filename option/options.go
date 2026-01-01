@@ -15,11 +15,9 @@ type _Options struct {
 	DNS          *DNSOptions          `json:"dns,omitempty"`
 	NTP          *NTPOptions          `json:"ntp,omitempty"`
 	Certificate  *CertificateOptions  `json:"certificate,omitempty"`
-	Endpoints    []Endpoint           `json:"endpoints,omitempty"`
 	Inbounds     []Inbound            `json:"inbounds,omitempty"`
 	Outbounds    []Outbound           `json:"outbounds,omitempty"`
 	Route        *RouteOptions        `json:"route,omitempty"`
-	Services     []Service            `json:"services,omitempty"`
 	Experimental *ExperimentalOptions `json:"experimental,omitempty"`
 }
 
@@ -51,10 +49,6 @@ func checkOptions(options *Options) error {
 	if err != nil {
 		return err
 	}
-	err = checkOutbounds(options.Outbounds, options.Endpoints)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -72,7 +66,7 @@ func checkInbounds(inbounds []Inbound) error {
 	return nil
 }
 
-func checkOutbounds(outbounds []Outbound, endpoints []Endpoint) error {
+func checkOutbounds(outbounds []Outbound) error {
 	seen := make(map[string]bool)
 	for _, outbound := range outbounds {
 		if outbound.Tag == "" {
@@ -82,15 +76,6 @@ func checkOutbounds(outbounds []Outbound, endpoints []Endpoint) error {
 			return E.New("duplicate outbound/endpoint tag: ", outbound.Tag)
 		}
 		seen[outbound.Tag] = true
-	}
-	for _, endpoint := range endpoints {
-		if endpoint.Tag == "" {
-			continue
-		}
-		if seen[endpoint.Tag] {
-			return E.New("duplicate outbound/endpoint tag: ", endpoint.Tag)
-		}
-		seen[endpoint.Tag] = true
 	}
 	return nil
 }

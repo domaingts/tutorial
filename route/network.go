@@ -47,7 +47,6 @@ type NetworkManager struct {
 	powerListener          winpowrprof.EventListener
 	pauseManager           pause.Manager
 	platformInterface      platform.Interface
-	endpoint               adapter.EndpointManager
 	inbound                adapter.InboundManager
 	outbound               adapter.OutboundManager
 	wifiState              adapter.WIFIState
@@ -86,7 +85,6 @@ func NewNetworkManager(ctx context.Context, logger logger.ContextLogger, routeOp
 		},
 		pauseManager:      service.FromContext[pause.Manager](ctx),
 		platformInterface: service.FromContext[platform.Interface](ctx),
-		endpoint:          service.FromContext[adapter.EndpointManager](ctx),
 		inbound:           service.FromContext[adapter.InboundManager](ctx),
 		outbound:          service.FromContext[adapter.OutboundManager](ctx),
 	}
@@ -394,14 +392,6 @@ func (r *NetworkManager) UpdateWIFIState() {
 
 func (r *NetworkManager) ResetNetwork() {
 	conntrack.Close()
-
-	for _, endpoint := range r.endpoint.Endpoints() {
-		listener, isListener := endpoint.(adapter.InterfaceUpdateListener)
-		if isListener {
-			listener.InterfaceUpdated()
-		}
-	}
-
 	for _, inbound := range r.inbound.Inbounds() {
 		listener, isListener := inbound.(adapter.InterfaceUpdateListener)
 		if isListener {

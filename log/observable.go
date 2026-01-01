@@ -34,7 +34,6 @@ func NewDefaultFactory(
 	writer io.Writer,
 	filePath string,
 	platformWriter PlatformWriter,
-	needObservable bool,
 ) ObservableFactory {
 	factory := &defaultFactory{
 		ctx:       ctx,
@@ -46,15 +45,11 @@ func NewDefaultFactory(
 		writer:         writer,
 		filePath:       filePath,
 		platformWriter: platformWriter,
-		needObservable: needObservable,
 		level:          LevelTrace,
 		subscriber:     observable.NewSubscriber[Entry](128),
 	}
 	if platformWriter != nil {
 		factory.platformFormatter.DisableColors = platformWriter.DisableColors()
-	}
-	if needObservable {
-		factory.observer = observable.NewObserver[Entry](factory.subscriber, 64)
 	}
 	return factory
 }
