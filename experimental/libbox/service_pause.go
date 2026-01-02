@@ -30,7 +30,3 @@ func (s *BoxService) Wake() {
 func (s *BoxService) ResetNetwork() {
 	s.instance.Router().ResetNetwork()
 }
-
-func (s *BoxService) UpdateWIFIState() {
-	s.instance.Network().UpdateWIFIState()
-}

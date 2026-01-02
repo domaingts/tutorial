@@ -24,9 +24,7 @@ type NetworkManager interface {
 	NetworkMonitor() tun.NetworkUpdateMonitor
 	InterfaceMonitor() tun.DefaultInterfaceMonitor
 	PackageManager() tun.PackageManager
-	WIFIState() WIFIState
 	ResetNetwork()
-	UpdateWIFIState()
 }
 
 type NetworkOptions struct {
@@ -42,11 +40,6 @@ type NetworkOptions struct {
 
 type InterfaceUpdateListener interface {
 	InterfaceUpdated()
-}
-
-type WIFIState struct {
-	SSID  string
-	BSSID string
 }
 
 type NetworkInterface struct {

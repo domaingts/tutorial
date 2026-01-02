@@ -201,8 +201,6 @@ type DefaultHeadlessRule struct {
 	NetworkType          badoption.Listable[InterfaceType] `json:"network_type,omitempty"`
 	NetworkIsExpensive   bool                              `json:"network_is_expensive,omitempty"`
 	NetworkIsConstrained bool                              `json:"network_is_constrained,omitempty"`
-	WIFISSID             badoption.Listable[string]        `json:"wifi_ssid,omitempty"`
-	WIFIBSSID            badoption.Listable[string]        `json:"wifi_bssid,omitempty"`
 	Invert               bool                              `json:"invert,omitempty"`
 
 	DomainMatcher *domain.Matcher `json:"-"`

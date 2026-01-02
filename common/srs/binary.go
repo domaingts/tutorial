@@ -34,8 +34,6 @@ const (
 	ruleItemProcessName
 	ruleItemProcessPath
 	ruleItemPackageName
-	ruleItemWIFISSID
-	ruleItemWIFIBSSID
 	ruleItemAdGuardDomain
 	ruleItemProcessPathRegex
 	ruleItemNetworkType
@@ -210,10 +208,6 @@ func readDefaultRule(reader varbin.Reader, recover bool) (rule option.DefaultHea
 			rule.ProcessPathRegex, err = readRuleItemString(reader)
 		case ruleItemPackageName:
 			rule.PackageName, err = readRuleItemString(reader)
-		case ruleItemWIFISSID:
-			rule.WIFISSID, err = readRuleItemString(reader)
-		case ruleItemWIFIBSSID:
-			rule.WIFIBSSID, err = readRuleItemString(reader)
 		case ruleItemAdGuardDomain:
 			var matcher *domain.AdGuardMatcher
 			matcher, err = domain.ReadAdGuardMatcher(reader)
@@ -361,18 +355,6 @@ func writeDefaultRule(writer varbin.Writer, rule option.DefaultHeadlessRule, gen
 	}
 	if rule.NetworkIsConstrained {
 		err = binary.Write(writer, binary.BigEndian, ruleItemNetworkIsConstrained)
-		if err != nil {
-			return err
-		}
-	}
-	if len(rule.WIFISSID) > 0 {
-		err = writeRuleItemString(writer, ruleItemWIFISSID, rule.WIFISSID)
-		if err != nil {
-			return err
-		}
-	}
-	if len(rule.WIFIBSSID) > 0 {
-		err = writeRuleItemString(writer, ruleItemWIFIBSSID, rule.WIFIBSSID)
 		if err != nil {
 			return err
 		}

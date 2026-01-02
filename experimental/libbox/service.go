@@ -13,7 +13,6 @@ import (
 	"github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/common/process"
-	"github.com/sagernet/sing-box/common/urltest"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/experimental/deprecated"
 	"github.com/sagernet/sing-box/experimental/libbox/internal/procfs"
@@ -33,9 +32,7 @@ import (
 type BoxService struct {
 	ctx                   context.Context
 	cancel                context.CancelFunc
-	urlTestHistoryStorage adapter.URLTestHistoryStorage
 	instance              *box.Box
-	clashServer           adapter.ClashServer
 	pauseManager          pause.Manager
 
 	iOSPauseFields
@@ -50,8 +47,6 @@ func NewService(configContent string, platformInterface PlatformInterface) (*Box
 	}
 	runtimeDebug.FreeOSMemory()
 	ctx, cancel := context.WithCancel(ctx)
-	urlTestHistoryStorage := urltest.NewHistoryStorage()
-	ctx = service.ContextWithPtr(ctx, urlTestHistoryStorage)
 	platformWrapper := &platformInterfaceWrapper{
 		iif:       platformInterface,
 		useProcFS: platformInterface.UseProcFS(),
@@ -71,9 +66,7 @@ func NewService(configContent string, platformInterface PlatformInterface) (*Box
 		ctx:                   ctx,
 		cancel:                cancel,
 		instance:              instance,
-		urlTestHistoryStorage: urlTestHistoryStorage,
 		pauseManager:          service.FromContext[pause.Manager](ctx),
-		clashServer:           service.FromContext[adapter.ClashServer](ctx),
 	}, nil
 }
 
@@ -94,7 +87,6 @@ func (s *BoxService) Start() error {
 
 func (s *BoxService) Close() error {
 	s.cancel()
-	s.urlTestHistoryStorage.Close()
 	var err error
 	done := make(chan struct{})
 	go func() {
@@ -108,10 +100,6 @@ func (s *BoxService) Close() error {
 		os.Exit(1)
 		return nil
 	}
-}
-
-func (s *BoxService) NeedWIFIState() bool {
-	return s.instance.Router().NeedWIFIState()
 }
 
 var (
@@ -222,14 +210,6 @@ func (w *platformInterfaceWrapper) IncludeAllNetworks() bool {
 
 func (w *platformInterfaceWrapper) ClearDNSCache() {
 	w.iif.ClearDNSCache()
-}
-
-func (w *platformInterfaceWrapper) ReadWIFIState() adapter.WIFIState {
-	wifiState := w.iif.ReadWIFIState()
-	if wifiState == nil {
-		return adapter.WIFIState{}
-	}
-	return (adapter.WIFIState)(*wifiState)
 }
 
 func (w *platformInterfaceWrapper) SystemCertificates() []string {

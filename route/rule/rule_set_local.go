@@ -139,7 +139,6 @@ func (s *LocalRuleSet) reloadRules(headlessRules []option.HeadlessRule) error {
 	}
 	var metadata adapter.RuleSetMetadata
 	metadata.ContainsProcessRule = hasHeadlessRule(headlessRules, isProcessHeadlessRule)
-	metadata.ContainsWIFIRule = hasHeadlessRule(headlessRules, isWIFIHeadlessRule)
 	metadata.ContainsIPCIDRRule = hasHeadlessRule(headlessRules, isIPCIDRHeadlessRule)
 	s.access.Lock()
 	s.rules = rules

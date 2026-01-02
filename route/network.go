@@ -49,7 +49,6 @@ type NetworkManager struct {
 	platformInterface      platform.Interface
 	inbound                adapter.InboundManager
 	outbound               adapter.OutboundManager
-	wifiState              adapter.WIFIState
 	started                bool
 }
 
@@ -374,22 +373,6 @@ func (r *NetworkManager) PackageManager() tun.PackageManager {
 	return r.packageManager
 }
 
-func (r *NetworkManager) WIFIState() adapter.WIFIState {
-	return r.wifiState
-}
-
-func (r *NetworkManager) UpdateWIFIState() {
-	if r.platformInterface != nil {
-		state := r.platformInterface.ReadWIFIState()
-		if state != r.wifiState {
-			r.wifiState = state
-			if state.SSID != "" {
-				r.logger.Info("updated WIFI state: SSID=", state.SSID, ", BSSID=", state.BSSID)
-			}
-		}
-	}
-}
-
 func (r *NetworkManager) ResetNetwork() {
 	conntrack.Close()
 	for _, inbound := range r.inbound.Inbounds() {
@@ -442,7 +425,6 @@ func (r *NetworkManager) notifyInterfaceUpdate(defaultInterface *control.Interfa
 		}
 	}
 	r.logger.Info("updated default interface ", defaultInterface.Name, ", ", strings.Join(options, ", "))
-	r.UpdateWIFIState()
 
 	if !r.started {
 		return

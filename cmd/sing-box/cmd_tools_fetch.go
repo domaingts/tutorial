@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 
-	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing/common/bufio"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -36,7 +35,6 @@ func init() {
 
 var (
 	httpClient  *http.Client
-	http3Client *http.Client
 )
 
 func fetch(args []string) error {
@@ -58,13 +56,6 @@ func fetch(args []string) error {
 		},
 	}
 	defer httpClient.CloseIdleConnections()
-	if C.WithQUIC {
-		err = initializeHTTP3Client(instance)
-		if err != nil {
-			return err
-		}
-		defer http3Client.CloseIdleConnections()
-	}
 	for _, urlString := range args {
 		var parsedURL *url.URL
 		parsedURL, err = url.Parse(urlString)
@@ -77,15 +68,6 @@ func fetch(args []string) error {
 			fallthrough
 		case "http", "https":
 			err = fetchHTTP(httpClient, parsedURL)
-			if err != nil {
-				return err
-			}
-		case "http3":
-			if !C.WithQUIC {
-				return C.ErrQUICNotIncluded
-			}
-			parsedURL.Scheme = "https"
-			err = fetchHTTP(http3Client, parsedURL)
 			if err != nil {
 				return err
 			}

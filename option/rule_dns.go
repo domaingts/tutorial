@@ -101,8 +101,6 @@ type RawDefaultDNSRule struct {
 	NetworkType              badoption.Listable[InterfaceType] `json:"network_type,omitempty"`
 	NetworkIsExpensive       bool                              `json:"network_is_expensive,omitempty"`
 	NetworkIsConstrained     bool                              `json:"network_is_constrained,omitempty"`
-	WIFISSID                 badoption.Listable[string]        `json:"wifi_ssid,omitempty"`
-	WIFIBSSID                badoption.Listable[string]        `json:"wifi_bssid,omitempty"`
 	RuleSet                  badoption.Listable[string]        `json:"rule_set,omitempty"`
 	RuleSetIPCIDRMatchSource bool                              `json:"rule_set_ip_cidr_match_source,omitempty"`
 	RuleSetIPCIDRAcceptEmpty bool                              `json:"rule_set_ip_cidr_accept_empty,omitempty"`

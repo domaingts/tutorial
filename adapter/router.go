@@ -22,7 +22,6 @@ type Router interface {
 	PreMatch(metadata InboundContext) error
 	ConnectionRouterEx
 	RuleSet(tag string) (RuleSet, bool)
-	NeedWIFIState() bool
 	Rules() []Rule
 	AppendTracker(tracker ConnectionTracker)
 	ResetNetwork()
@@ -64,7 +63,6 @@ type RuleSetUpdateCallback func(it RuleSet)
 
 type RuleSetMetadata struct {
 	ContainsProcessRule bool
-	ContainsWIFIRule    bool
 	ContainsIPCIDRRule  bool
 }
 type HTTPStartContext struct {

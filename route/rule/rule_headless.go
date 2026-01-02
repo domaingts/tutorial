@@ -160,18 +160,6 @@ func NewDefaultHeadlessRule(ctx context.Context, options option.DefaultHeadlessR
 			rule.items = append(rule.items, item)
 			rule.allItems = append(rule.allItems, item)
 		}
-		if len(options.WIFISSID) > 0 {
-			item := NewWIFISSIDItem(networkManager, options.WIFISSID)
-			rule.items = append(rule.items, item)
-			rule.allItems = append(rule.allItems, item)
-
-		}
-		if len(options.WIFIBSSID) > 0 {
-			item := NewWIFIBSSIDItem(networkManager, options.WIFIBSSID)
-			rule.items = append(rule.items, item)
-			rule.allItems = append(rule.allItems, item)
-
-		}
 	}
 	if len(options.AdGuardDomain) > 0 {
 		item := NewAdGuardDomainItem(options.AdGuardDomain)

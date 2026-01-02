@@ -62,10 +62,6 @@ func isProcessHeadlessRule(rule option.DefaultHeadlessRule) bool {
 	return len(rule.ProcessName) > 0 || len(rule.ProcessPath) > 0 || len(rule.ProcessPathRegex) > 0 || len(rule.PackageName) > 0
 }
 
-func isWIFIHeadlessRule(rule option.DefaultHeadlessRule) bool {
-	return len(rule.WIFISSID) > 0 || len(rule.WIFIBSSID) > 0
-}
-
 func isIPCIDRHeadlessRule(rule option.DefaultHeadlessRule) bool {
 	return len(rule.IPCIDR) > 0 || rule.IPSet != nil
 }

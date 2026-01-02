@@ -18,7 +18,6 @@ type Interface interface {
 	UnderNetworkExtension() bool
 	IncludeAllNetworks() bool
 	ClearDNSCache()
-	ReadWIFIState() adapter.WIFIState
 	SystemCertificates() []string
 	process.Searcher
 	SendNotification(notification *Notification) error

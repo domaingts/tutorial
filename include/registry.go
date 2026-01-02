@@ -53,7 +53,6 @@ func OutboundRegistry() *outbound.Registry {
 	protocolDNS.RegisterOutbound(registry)
 
 	group.RegisterSelector(registry)
-	group.RegisterURLTest(registry)
 
 	socks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)

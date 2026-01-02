@@ -9,27 +9,6 @@ import (
 	"github.com/sagernet/sing/common/varbin"
 )
 
-type ClashServer interface {
-	LifecycleService
-	ConnectionTracker
-	Mode() string
-	ModeList() []string
-	HistoryStorage() URLTestHistoryStorage
-}
-
-type URLTestHistory struct {
-	Time  time.Time `json:"time"`
-	Delay uint16    `json:"delay"`
-}
-
-type URLTestHistoryStorage interface {
-	SetHook(hook chan<- struct{})
-	LoadURLTestHistory(tag string) *URLTestHistory
-	DeleteURLTestHistory(tag string)
-	StoreURLTestHistory(tag string, history *URLTestHistory)
-	Close() error
-}
-
 type CacheFile interface {
 	LifecycleService
 
