@@ -15,6 +15,7 @@ type OnDemandRule struct {
 	Action                *OnDemandRuleAction        `json:"action,omitempty"`
 	DNSSearchDomainMatch  badoption.Listable[string] `json:"dns_search_domain_match,omitempty"`
 	DNSServerAddressMatch badoption.Listable[string] `json:"dns_server_address_match,omitempty"`
+	InterfaceTypeMatch    *OnDemandRuleInterfaceType `json:"interface_type_match,omitempty"`
 	SSIDMatch             badoption.Listable[string] `json:"ssid_match,omitempty"`
 	ProbeURL              string                     `json:"probe_url,omitempty"`
 }
@@ -59,5 +60,46 @@ func (r *OnDemandRuleAction) UnmarshalJSON(bytes []byte) error {
 		return E.New("unknown action name: ", actionName)
 	}
 	*r = OnDemandRuleAction(actionValue)
+	return nil
+}
+
+type OnDemandRuleInterfaceType int
+
+func (r *OnDemandRuleInterfaceType) MarshalJSON() ([]byte, error) {
+	if r == nil {
+		return nil, nil
+	}
+	value := *r
+	var interfaceTypeName string
+	switch value {
+	case 1:
+		interfaceTypeName = "any"
+	case 2:
+		interfaceTypeName = "wifi"
+	case 3:
+		interfaceTypeName = "cellular"
+	default:
+		return nil, E.New("unknown interface type: ", value)
+	}
+	return json.Marshal(interfaceTypeName)
+}
+
+func (r *OnDemandRuleInterfaceType) UnmarshalJSON(bytes []byte) error {
+	var interfaceTypeName string
+	if err := json.Unmarshal(bytes, &interfaceTypeName); err != nil {
+		return err
+	}
+	var interfaceTypeValue int
+	switch interfaceTypeName {
+	case "any":
+		interfaceTypeValue = 1
+	case "wifi":
+		interfaceTypeValue = 2
+	case "cellular":
+		interfaceTypeValue = 3
+	default:
+		return E.New("unknown interface type name: ", interfaceTypeName)
+	}
+	*r = OnDemandRuleInterfaceType(interfaceTypeValue)
 	return nil
 }

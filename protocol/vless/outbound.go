@@ -23,7 +23,7 @@ import (
 )
 
 func RegisterOutbound(registry *outbound.Registry) {
-	outbound.Register[option.VLESSOutboundOptions](registry, C.TypeVLESS, NewOutbound)
+	outbound.Register(registry, C.TypeVLESS, NewOutbound)
 }
 
 type Outbound struct {
@@ -125,10 +125,8 @@ func (h *vlessDialer) DialContext(ctx context.Context, network string, destinati
 	ctx, metadata := adapter.ExtendContext(ctx)
 	metadata.Outbound = h.Tag()
 	metadata.Destination = destination
-	var conn net.Conn
-	var err error
 
-	conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
+	conn, err := h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
 	if err == nil && h.tlsConfig != nil {
 		conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
 	}
@@ -165,9 +163,8 @@ func (h *vlessDialer) ListenPacket(ctx context.Context, destination M.Socksaddr)
 	ctx, metadata := adapter.ExtendContext(ctx)
 	metadata.Outbound = h.Tag()
 	metadata.Destination = destination
-	var conn net.Conn
-	var err error
-	conn, err = h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
+
+	conn, err := h.dialer.DialContext(ctx, N.NetworkTCP, h.serverAddr)
 	if err == nil && h.tlsConfig != nil {
 		conn, err = tls.ClientHandshake(ctx, conn, h.tlsConfig)
 	}

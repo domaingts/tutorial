@@ -8,14 +8,12 @@ import (
 type InterfaceType uint8
 
 const (
-	InterfaceTypeCellular InterfaceType = iota
-	InterfaceTypeEthernet
+	InterfaceTypeEthernet InterfaceType = iota
 	InterfaceTypeOther
 )
 
 var (
 	interfaceTypeToString = map[InterfaceType]string{
-		InterfaceTypeCellular: "cellular",
 		InterfaceTypeEthernet: "ethernet",
 		InterfaceTypeOther:    "other",
 	}

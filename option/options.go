@@ -5,6 +5,7 @@ import (
 	"context"
 
 	E "github.com/sagernet/sing/common/exceptions"
+	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/common/json"
 )
 
@@ -49,33 +50,39 @@ func checkOptions(options *Options) error {
 	if err != nil {
 		return err
 	}
+	err = checkOutbounds(options.Outbounds)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func checkInbounds(inbounds []Inbound) error {
 	seen := make(map[string]bool)
-	for _, inbound := range inbounds {
-		if inbound.Tag == "" {
-			continue
+	for i, inbound := range inbounds {
+		tag := inbound.Tag
+		if tag == "" {
+			tag = F.ToString(i)
 		}
-		if seen[inbound.Tag] {
-			return E.New("duplicate inbound tag: ", inbound.Tag)
+		if seen[tag] {
+			return E.New("duplicate inbound tag: ", tag)
 		}
-		seen[inbound.Tag] = true
+		seen[tag] = true
 	}
 	return nil
 }
 
 func checkOutbounds(outbounds []Outbound) error {
 	seen := make(map[string]bool)
-	for _, outbound := range outbounds {
-		if outbound.Tag == "" {
-			continue
+	for i, outbound := range outbounds {
+		tag := outbound.Tag
+		if tag == "" {
+			tag = F.ToString(i)
 		}
-		if seen[outbound.Tag] {
-			return E.New("duplicate outbound/endpoint tag: ", outbound.Tag)
+		if seen[tag] {
+			return E.New("duplicate outbound/endpoint tag: ", tag)
 		}
-		seen[outbound.Tag] = true
+		seen[tag] = true
 	}
 	return nil
 }

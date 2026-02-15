@@ -5,15 +5,11 @@ import (
 	"crypto/tls"
 	"net"
 	"os"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/sagernet/fswatch"
-	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
-	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/ntp"
 )
@@ -24,7 +20,6 @@ type STDServerConfig struct {
 	access          sync.RWMutex
 	config          *tls.Config
 	logger          log.Logger
-	acmeService     adapter.SimpleLifecycle
 	certificate     []byte
 	key             []byte
 	certificatePath string
@@ -50,22 +45,14 @@ func (c *STDServerConfig) SetServerName(serverName string) {
 func (c *STDServerConfig) NextProtos() []string {
 	c.access.RLock()
 	defer c.access.RUnlock()
-	if c.acmeService != nil && len(c.config.NextProtos) > 1 && c.config.NextProtos[0] == ACMETLS1Protocol {
-		return c.config.NextProtos[1:]
-	} else {
-		return c.config.NextProtos
-	}
+	return c.config.NextProtos
 }
 
 func (c *STDServerConfig) SetNextProtos(nextProto []string) {
 	c.access.Lock()
 	defer c.access.Unlock()
 	config := c.config.Clone()
-	if c.acmeService != nil && len(c.config.NextProtos) > 1 && c.config.NextProtos[0] == ACMETLS1Protocol {
-		config.NextProtos = append(c.config.NextProtos[:1], nextProto...)
-	} else {
-		config.NextProtos = nextProto
-	}
+	config.NextProtos = nextProto
 	c.config = config
 }
 
@@ -88,15 +75,11 @@ func (c *STDServerConfig) Clone() Config {
 }
 
 func (c *STDServerConfig) Start() error {
-	if c.acmeService != nil {
-		return c.acmeService.Start()
-	} else {
-		err := c.startWatcher()
-		if err != nil {
-			c.logger.Warn("create fsnotify watcher: ", err)
-		}
-		return nil
+	err := c.startWatcher()
+	if err != nil {
+		c.logger.Warn("create fsnotify watcher: ", err)
 	}
+	return nil
 }
 
 func (c *STDServerConfig) startWatcher() error {
@@ -173,9 +156,6 @@ func (c *STDServerConfig) certificateUpdated(path string) error {
 }
 
 func (c *STDServerConfig) Close() error {
-	if c.acmeService != nil {
-		return c.acmeService.Close()
-	}
 	if c.watcher != nil {
 		return c.watcher.Close()
 	}
@@ -186,21 +166,8 @@ func NewSTDServer(ctx context.Context, logger log.Logger, options option.Inbound
 	if !options.Enabled {
 		return nil, nil
 	}
-	var tlsConfig *tls.Config
-	var acmeService adapter.SimpleLifecycle
 	var err error
-	if options.ACME != nil && len(options.ACME.Domain) > 0 {
-		//nolint:staticcheck
-		tlsConfig, acmeService, err = startACME(ctx, logger, common.PtrValueOrDefault(options.ACME))
-		if err != nil {
-			return nil, err
-		}
-		if options.Insecure {
-			return nil, errInsecureUnused
-		}
-	} else {
-		tlsConfig = &tls.Config{}
-	}
+	tlsConfig := &tls.Config{}
 	tlsConfig.Time = ntp.TimeFuncFromContext(ctx)
 	if options.ServerName != "" {
 		tlsConfig.ServerName = options.ServerName
@@ -236,47 +203,6 @@ func NewSTDServer(ctx context.Context, logger log.Logger, options option.Inbound
 	}
 	var certificate []byte
 	var key []byte
-	if acmeService == nil {
-		if len(options.Certificate) > 0 {
-			certificate = []byte(strings.Join(options.Certificate, "\n"))
-		} else if options.CertificatePath != "" {
-			content, err := os.ReadFile(options.CertificatePath)
-			if err != nil {
-				return nil, E.Cause(err, "read certificate")
-			}
-			certificate = content
-		}
-		if len(options.Key) > 0 {
-			key = []byte(strings.Join(options.Key, "\n"))
-		} else if options.KeyPath != "" {
-			content, err := os.ReadFile(options.KeyPath)
-			if err != nil {
-				return nil, E.Cause(err, "read key")
-			}
-			key = content
-		}
-		if certificate == nil && key == nil && options.Insecure {
-			timeFunc := ntp.TimeFuncFromContext(ctx)
-			if timeFunc == nil {
-				timeFunc = time.Now
-			}
-			tlsConfig.GetCertificate = func(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
-				return GenerateKeyPair(nil, nil, timeFunc, info.ServerName)
-			}
-		} else {
-			if certificate == nil {
-				return nil, E.New("missing certificate")
-			} else if key == nil {
-				return nil, E.New("missing key")
-			}
-
-			keyPair, err := tls.X509KeyPair(certificate, key)
-			if err != nil {
-				return nil, E.Cause(err, "parse x509 key pair")
-			}
-			tlsConfig.Certificates = []tls.Certificate{keyPair}
-		}
-	}
 	var echKeyPath string
 	if options.ECH != nil && options.ECH.Enabled {
 		err = parseECHServerConfig(ctx, options, tlsConfig, &echKeyPath)
@@ -287,7 +213,6 @@ func NewSTDServer(ctx context.Context, logger log.Logger, options option.Inbound
 	serverConfig := &STDServerConfig{
 		config:          tlsConfig,
 		logger:          logger,
-		acmeService:     acmeService,
 		certificate:     certificate,
 		key:             key,
 		certificatePath: options.CertificatePath,

@@ -20,6 +20,7 @@ type PlatformInterface interface {
 	GetInterfaces() (NetworkInterfaceIterator, error)
 	UnderNetworkExtension() bool
 	IncludeAllNetworks() bool
+	ReadWIFIState() *WIFIState
 	SystemCertificates() StringIterator
 	ClearDNSCache()
 	SendNotification(notification *Notification) error
@@ -35,7 +36,6 @@ type InterfaceUpdateListener interface {
 }
 
 const (
-	InterfaceTypeCellular = int32(C.InterfaceTypeCellular)
 	InterfaceTypeEthernet = int32(C.InterfaceTypeEthernet)
 	InterfaceTypeOther    = int32(C.InterfaceTypeOther)
 )
@@ -50,6 +50,15 @@ type NetworkInterface struct {
 	Type      int32
 	DNSServer StringIterator
 	Metered   bool
+}
+
+type WIFIState struct {
+	SSID  string
+	BSSID string
+}
+
+func NewWIFIState(wifiSSID string, wifiBSSID string) *WIFIState {
+	return &WIFIState{wifiSSID, wifiBSSID}
 }
 
 type NetworkInterfaceIterator interface {
@@ -71,6 +80,7 @@ type OnDemandRule interface {
 	Target() int32
 	DNSSearchDomainMatch() StringIterator
 	DNSServerAddressMatch() StringIterator
+	InterfaceTypeMatch() int32
 	SSIDMatch() StringIterator
 	ProbeURL() string
 }
@@ -97,6 +107,13 @@ func (r *onDemandRule) DNSSearchDomainMatch() StringIterator {
 
 func (r *onDemandRule) DNSServerAddressMatch() StringIterator {
 	return newIterator(r.OnDemandRule.DNSServerAddressMatch)
+}
+
+func (r *onDemandRule) InterfaceTypeMatch() int32 {
+	if r.OnDemandRule.InterfaceTypeMatch == nil {
+		return -1
+	}
+	return int32(*r.OnDemandRule.InterfaceTypeMatch)
 }
 
 func (r *onDemandRule) SSIDMatch() StringIterator {

@@ -14,7 +14,6 @@ import (
 	"github.com/sagernet/sing-box/protocol/block"
 	"github.com/sagernet/sing-box/protocol/direct"
 	protocolDNS "github.com/sagernet/sing-box/protocol/dns"
-	"github.com/sagernet/sing-box/protocol/group"
 	"github.com/sagernet/sing-box/protocol/mixed"
 	"github.com/sagernet/sing-box/protocol/redirect"
 	"github.com/sagernet/sing-box/protocol/socks"
@@ -51,8 +50,6 @@ func OutboundRegistry() *outbound.Registry {
 
 	block.RegisterOutbound(registry)
 	protocolDNS.RegisterOutbound(registry)
-
-	group.RegisterSelector(registry)
 
 	socks.RegisterOutbound(registry)
 	vless.RegisterOutbound(registry)
